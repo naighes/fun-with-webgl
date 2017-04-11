@@ -1,4 +1,3 @@
-
 const wgl = (canvasId, vs, fs, game) => {
     const canvas = document.getElementById(canvasId)
     const context = getContext(canvas)
@@ -22,25 +21,37 @@ const wgl = (canvasId, vs, fs, game) => {
         }
     }
 
-    const updateDraw = (context, program, timestamp) => {
+    const loop = (context, program, timestamp) => {
         loopBody(game, o => o.update)(context, program, timestamp)
         loopBody(game, o => o.draw)(context, program, timestamp)
+        const previous = timestamp.totalGameTime
+        window.requestAnimationFrame(timestamp => {
+            const current = timestamp / 1000
+            const delta = current - previous
+            loop(context, program, {
+                totalGameTime: current,
+                delta: delta,
+                fps: 1 / delta
+            })
+        })
+    }
 
-        window.requestAnimationFrame(timestamp => updateDraw(context, program, timestamp))
+    const initialize = (context, program) => {
+        loopBody(game, o => o.initialize)(context, program)
+
+        return program
     }
 
     return Promise.all([parseShaderSource(vs, context.VERTEX_SHADER),
         parseShaderSource(fs, context.FRAGMENT_SHADER)])
         .then(values => values.map(value => createShader(context, value.type, value.content)))
         .then(values => createProgram(context, values))
-        .then(program => {
-            loopBody(game, o => o.initialize)(context, program)
-
-            return program
-        })
-        .then(program => {
-            window.requestAnimationFrame(timestamp => updateDraw(context, program, timestamp))
-        })
+        .then(program => initialize(context, program))
+        .then(program => loop(context, program, {
+            totalGameTime: 0,
+            delta: 0,
+            fps: 0
+        }))
 }
 
 const getContext = canvas => {
