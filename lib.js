@@ -1,3 +1,4 @@
+
 const wgl = (canvasId, vs, fs, game) => {
     const canvas = document.getElementById(canvasId)
     const context = getContext(canvas)
@@ -6,23 +7,25 @@ const wgl = (canvasId, vs, fs, game) => {
         return null
     }
 
+    const withObjects = (objects, f) =>
+        (timestamp, context, program) => objects.filter(obj => typeof f(obj) === 'function')
+            .forEach(obj => f(obj)(timestamp, context, program))
+
     const updateDraw = (timestamp, context, program) => {
-        if (typeof game.update !== 'function') {
-            console.warn('game.update is missing')
-        } else {
-            game.update(timestamp, context, program)
-            const objects = (game.objects || [])
-            objects.filter(obj => typeof obj.update === 'function')
-                .forEach(obj => obj.update(timestamp, context, program))
+        const objects = (game.objects || [])
+
+        const update = o => o.update
+
+        if (typeof update(game) === 'function') {
+            update(game)(timestamp, context, program)
+            withObjects(objects, o => update(o))(timestamp, context, program)
         }
 
-        if (typeof game.draw !== 'function') {
-            console.warn('game.draw is missing')
-        } else {
-            game.draw(timestamp, context, program)
-            const objects = (game.objects || [])
-            objects.filter(obj => typeof obj.draw === 'function')
-                .forEach(obj => obj.draw(timestamp, context, program))
+        const draw = o => o.draw
+
+        if (typeof draw(game) === 'function') {
+            draw(game)(timestamp, context, program)
+            withObjects(objects, o => draw(o))(timestamp, context, program)
         }
 
         window.requestAnimationFrame(timestamp => updateDraw(timestamp, context, program))
@@ -33,9 +36,7 @@ const wgl = (canvasId, vs, fs, game) => {
         .then(values => values.map(value => createShader(context, value.type, value.content)))
         .then(values => createProgram(context, values))
         .then(program => {
-            if (typeof game.initialize !== 'function') {
-                console.warn('game.initialize is missing')
-            } else {
+            if (typeof game.initialize === 'function') {
                 game.initialize(context, program)
                 const objects = (game.objects || [])
                 objects.filter(obj => typeof obj.initialize === 'function')
