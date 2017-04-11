@@ -9,12 +9,13 @@ function Triangle(vertices) {
     }
 
     this.update = (context, program, time) => {
-        const position = context.getAttribLocation(program, 'a_position')
         const buffer = context.createBuffer()
 
         // bind the position buffer
         context.bindBuffer(context.ARRAY_BUFFER, buffer)
         context.bufferData(context.ARRAY_BUFFER, new Float32Array(_vertices), context.STATIC_DRAW)
+
+        const position = context.getAttribLocation(program, 'a_position')
         context.enableVertexAttribArray(position)
 
         // tell the attribute how to get data out of buffer (ARRAY_BUFFER)
@@ -24,6 +25,9 @@ function Triangle(vertices) {
             false, // normalize: don't normalize the data
             0, // stride: 0 = move forward size * sizeof(type) each iteration to get the next position
             0) // offset: start at the beginning of the buffer
+
+        const color = context.getUniformLocation(program, "u_color")
+        context.uniform4f(color, 0.2, 0, 0.3, 1.0)
     }
 
     this.draw = (context, program, time) => {
@@ -37,6 +41,7 @@ function Game() {
     this.objects = []
 
     this.initialize = (context, program) => {
+        context.useProgram(program)
         this.objects.push(new Triangle([0, 0,
                                         0, 0.5,
                                         0.7, 0]))
@@ -54,7 +59,6 @@ function Game() {
         // clear the color as well as the depth buffer
         context.clear(context.COLOR_BUFFER_BIT | context.DEPTH_BUFFER_BIT)
         context.viewport(0, 0, context.canvas.width, context.canvas.height)
-        context.useProgram(program)
     }
 }
 
