@@ -6,10 +6,10 @@ const initialize = (context, program) => {
     game.objects.push(buildTriangle(context, program))
 }
 
-const update = (context, program, timestamp) => {
+const update = (context, program, time) => {
 }
 
-const draw = (context, program, timestamp) => {
+const draw = (context, program, time) => {
     context.clearColor(0.392157, 0.584314, 0.929412, 1.0)
     // enable depth testing
     context.enable(context.DEPTH_TEST)
@@ -23,7 +23,7 @@ const draw = (context, program, timestamp) => {
 
 const buildTriangle = (context, program) => {
     return {
-        update: (context, program, timestamp) => {
+        update: (context, program, time) => {
             const position = context.getAttribLocation(program, 'a_position')
             const buffer = context.createBuffer()
             // bind the position buffer
@@ -42,7 +42,7 @@ const buildTriangle = (context, program) => {
             const offset = 0 // start at the beginning of the buffer
             context.vertexAttribPointer(position, size, type, normalize, stride, offset)
         },
-        draw: (context, program, timestamp) => {
+        draw: (context, program, time) => {
             context.drawArrays(context.TRIANGLES, // primitive type
                 0, // offset
                 3) //count

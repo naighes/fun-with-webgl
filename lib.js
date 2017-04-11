@@ -7,24 +7,24 @@ const wgl = (canvasId, vs, fs, game) => {
     }
 
     const withObjects = (objects, f) =>
-        (context, program, timestamp) => objects.filter(obj => typeof f(obj) === 'function')
-            .forEach(obj => f(obj)(context, program, timestamp))
+        (context, program, time) => objects.filter(obj => typeof f(obj) === 'function')
+            .forEach(obj => f(obj)(context, program, time))
 
     const loopBody = (game, f) => {
         const objects = (game.objects || [])
 
-        return (context, program, timestamp) => {
+        return (context, program, time) => {
             if (typeof f(game) === 'function') {
-                f(game)(context, program, timestamp)
-                withObjects(objects, o => f(o))(context, program, timestamp)
+                f(game)(context, program, time)
+                withObjects(objects, o => f(o))(context, program, time)
             }
         }
     }
 
-    const loop = (context, program, timestamp) => {
-        loopBody(game, o => o.update)(context, program, timestamp)
-        loopBody(game, o => o.draw)(context, program, timestamp)
-        const previous = timestamp.totalGameTime
+    const loop = (context, program, time) => {
+        loopBody(game, o => o.update)(context, program, time)
+        loopBody(game, o => o.draw)(context, program, time)
+        const previous = time.totalGameTime
         window.requestAnimationFrame(timestamp => {
             const current = timestamp / 1000
             const delta = current - previous
