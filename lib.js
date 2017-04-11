@@ -8,27 +8,25 @@ const wgl = (canvasId, vs, fs, game) => {
     }
 
     const withObjects = (objects, f) =>
-        (timestamp, context, program) => objects.filter(obj => typeof f(obj) === 'function')
-            .forEach(obj => f(obj)(timestamp, context, program))
+        (context, program, timestamp) => objects.filter(obj => typeof f(obj) === 'function')
+            .forEach(obj => f(obj)(context, program, timestamp))
 
-    const updateDraw = (timestamp, context, program) => {
+    const loopBody = (game, f) => {
         const objects = (game.objects || [])
 
-        const update = o => o.update
-
-        if (typeof update(game) === 'function') {
-            update(game)(timestamp, context, program)
-            withObjects(objects, o => update(o))(timestamp, context, program)
+        return (context, program, timestamp) => {
+            if (typeof f(game) === 'function') {
+                f(game)(context, program, timestamp)
+                withObjects(objects, o => f(o))(context, program, timestamp)
+            }
         }
+    }
 
-        const draw = o => o.draw
+    const updateDraw = (context, program, timestamp) => {
+        loopBody(game, o => o.update)(context, program, timestamp)
+        loopBody(game, o => o.draw)(context, program, timestamp)
 
-        if (typeof draw(game) === 'function') {
-            draw(game)(timestamp, context, program)
-            withObjects(objects, o => draw(o))(timestamp, context, program)
-        }
-
-        window.requestAnimationFrame(timestamp => updateDraw(timestamp, context, program))
+        window.requestAnimationFrame(timestamp => updateDraw(context, program, timestamp))
     }
 
     return Promise.all([parseShaderSource(vs, context.VERTEX_SHADER),
@@ -36,17 +34,12 @@ const wgl = (canvasId, vs, fs, game) => {
         .then(values => values.map(value => createShader(context, value.type, value.content)))
         .then(values => createProgram(context, values))
         .then(program => {
-            if (typeof game.initialize === 'function') {
-                game.initialize(context, program)
-                const objects = (game.objects || [])
-                objects.filter(obj => typeof obj.initialize === 'function')
-                    .forEach(obj => obj.initialize(context, program))
-            }
+            loopBody(game, o => o.initialize)(context, program)
 
             return program
         })
         .then(program => {
-            window.requestAnimationFrame(timestamp => updateDraw(timestamp, context, program))
+            window.requestAnimationFrame(timestamp => updateDraw(context, program, timestamp))
         })
 }
 
