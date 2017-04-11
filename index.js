@@ -1,5 +1,5 @@
 window.onload = () => {
-    wgl('view', 'fx/2d-vs.fx', 'fx/2d-fs.fx', new Game())
+    wgl('view', 'fx/vs.fx', 'fx/fs.fx', new Game())
 }
 
 function Triangle(vertices) {
