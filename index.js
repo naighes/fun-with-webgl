@@ -16,6 +16,20 @@ function Triangle(vertices, tint) {
         return buffer
     }
 
+    const modelViewProjection = context => {
+        const projection = mat4.create()
+        const aspect = context.canvas.clientWidth / context.canvas.clientHeight
+        mat4.perspective(projection, Math.PI/4, aspect, 1, 200)
+
+        const view = mat4.create()
+        mat4.lookAt(view, vec3.fromValues(0, 0, 3), vec3.fromValues(0, 0, 0), vec3.fromValues(0, 1, 0))
+
+        const mvp = mat4.create()
+        mat4.multiply(mvp, projection, view)
+
+        return mvp
+    }
+
     this.initialize = context => {
         _positionBuffer = createBuffer(context, _vertices)
         _colorBuffer = createBuffer(context, _tint)
@@ -37,6 +51,9 @@ function Triangle(vertices, tint) {
             false, // normalize: don't normalize the data
             0, // stride: 0 = move forward size * sizeof(type) each iteration to get the next position
             0) // offset: start at the beginning of the buffer
+
+        const mvp = context.getUniformLocation(program, 'mvp')
+        context.uniformMatrix4fv(mvp, false, modelViewProjection(context))
     }
 
     this.draw = (context, program, time) => {
