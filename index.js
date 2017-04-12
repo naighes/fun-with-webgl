@@ -4,17 +4,22 @@ window.onload = () => {
 
 function Triangle(vertices) {
     let _vertices = vertices
+    let _buffer = null
 
-    this.initialize = (context, program) => {
+    this.initialize = context => {
+        _buffer = context.createBuffer()
+
+        context.bindBuffer(context.ARRAY_BUFFER, _buffer)
+        context.bufferData(context.ARRAY_BUFFER, new Float32Array(_vertices), context.STATIC_DRAW)
     }
 
     this.update = (context, program, time) => {
-        const buffer = context.createBuffer()
+    }
 
-        // bind the position buffer
-        context.bindBuffer(context.ARRAY_BUFFER, buffer)
-        context.bufferData(context.ARRAY_BUFFER, new Float32Array(_vertices), context.STATIC_DRAW)
+    this.draw = (context, program, time) => {
+        context.useProgram(program)
 
+        context.bindBuffer(context.ARRAY_BUFFER, _buffer)
         const position = context.getAttribLocation(program, 'a_position')
         context.enableVertexAttribArray(position)
 
@@ -28,9 +33,6 @@ function Triangle(vertices) {
 
         const color = context.getUniformLocation(program, "u_color")
         context.uniform4f(color, 0.2, 0, 0.3, 1.0)
-    }
-
-    this.draw = (context, program, time) => {
         context.drawArrays(context.TRIANGLES, // primitive type
             0, // offset
             3) //count
@@ -40,17 +42,19 @@ function Triangle(vertices) {
 function Game() {
     this.objects = []
 
-    this.initialize = (context, program) => {
-        context.useProgram(program)
+    this.initialize = context => {
         this.objects.push(new Triangle([0, 0,
                                         0, 0.5,
                                         0.7, 0]))
+        this.objects.push(new Triangle([-0.5, -0.5,
+                                        -0.9, -0.5,
+                                        -0.5, -0.8]))
     }
 
-    this.update = (context, program, time) => {
+    this.update = (context, time) => {
     }
 
-    this.draw = (context, program, time) => {
+    this.draw = (context, time) => {
         context.clearColor(0.392157, 0.584314, 0.929412, 1.0)
         // enable depth testing
         context.enable(context.DEPTH_TEST)

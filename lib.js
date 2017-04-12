@@ -6,29 +6,29 @@ const wgl = (canvasId, vs, fs, game) => {
         return null
     }
 
-    const withObjects = (objects, f) =>
-        (context, program, time) => objects.filter(obj => typeof f(obj) === 'function')
-            .forEach(obj => f(obj)(context, program, time))
+    const loopBody = (game, objects, f) => (context, time) => {
+        const a = f(game)
 
-    const loopBody = (game, f) => {
-        const objects = (game.objects || [])
-
-        return (context, program, time) => {
-            if (typeof f(game) === 'function') {
-                f(game)(context, program, time)
-                withObjects(objects, o => f(o))(context, program, time)
-            }
+        if (typeof a === 'function') {
+            a(context, time)
         }
+
+        objects.forEach(obj => {
+            const b = f(obj)
+            if (typeof b === 'function') {
+                b(context, time)
+            }
+        })
     }
 
-    const loop = (context, program, time) => {
-        loopBody(game, o => o.update)(context, program, time)
-        loopBody(game, o => o.draw)(context, program, time)
+    const loop = (context, objects, time) => {
+        loopBody(game, objects, o => o.update)(context, time)
+        loopBody(game, objects, o => o.draw)(context, time)
         const previous = time.totalGameTime
         window.requestAnimationFrame(timestamp => {
             const current = timestamp / 1000
             const delta = current - previous
-            loop(context, program, {
+            loop(context, objects, {
                 totalGameTime: current,
                 delta: delta,
                 fps: 1 / delta
@@ -36,18 +36,32 @@ const wgl = (canvasId, vs, fs, game) => {
         })
     }
 
-    const initialize = (context, program) => {
-        loopBody(game, o => o.initialize)(context, program)
+    const initialize = (context, buildProgram) => {
+        if (typeof game.initialize === 'function') {
+            game.initialize(context)
+        }
 
-        return program
+        const objects = game.objects || []
+
+        return objects.map(obj => {
+            if (typeof obj.initialize === 'function') {
+                obj.initialize(context)
+            }
+
+            const program = buildProgram(context)
+            return {
+                update: context => obj.update(context, program),
+                draw: context => obj.draw(context, program)
+            }
+        })
     }
 
     return Promise.all([parseShaderSource(vs, context.VERTEX_SHADER),
         parseShaderSource(fs, context.FRAGMENT_SHADER)])
         .then(values => values.map(value => createShader(context, value.type, value.content)))
-        .then(values => createProgram(context, values))
-        .then(program => initialize(context, program))
-        .then(program => loop(context, program, {
+        .then(values => context => createProgram(context, values))
+        .then(buildProgram => initialize(context, buildProgram))
+        .then(objects => loop(context, objects, {
             totalGameTime: 0,
             delta: 0,
             fps: 0
