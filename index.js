@@ -5,35 +5,61 @@ window.onload = () => {
 function Triangle(vertices, tint) {
     let _vertices = vertices
     let _tint = tint
-    let _buffer = null
+    let _positionBuffer = null
+    let _colorBuffer = null
+
+    const createBuffer = (context, data) => {
+        const buffer = context.createBuffer()
+        context.bindBuffer(context.ARRAY_BUFFER, buffer)
+        context.bufferData(context.ARRAY_BUFFER, new Float32Array(data), context.STATIC_DRAW)
+
+        return buffer
+    }
 
     this.initialize = context => {
-        _buffer = context.createBuffer()
-
-        context.bindBuffer(context.ARRAY_BUFFER, _buffer)
-        context.bufferData(context.ARRAY_BUFFER, new Float32Array(_vertices), context.STATIC_DRAW)
+        _positionBuffer = createBuffer(context, _vertices)
+        _colorBuffer = createBuffer(context, _tint)
     }
 
     this.update = (context, program, time) => {
     }
 
-    this.draw = (context, program, time) => {
-        context.useProgram(program)
+    const sendPosition = (context, program) => {
+        context.bindBuffer(context.ARRAY_BUFFER, _positionBuffer)
 
-        context.bindBuffer(context.ARRAY_BUFFER, _buffer)
-        const position = context.getAttribLocation(program, 'a_position')
-        context.enableVertexAttribArray(position)
+        const attribute = context.getAttribLocation(program, 'a_position')
+        context.enableVertexAttribArray(attribute)
 
         // tell the attribute how to get data out of buffer (ARRAY_BUFFER)
-        context.vertexAttribPointer(position,
+        context.vertexAttribPointer(attribute,
             2, // size: 2 components per iteration
             context.FLOAT, // type: the data is 32bit floats
             false, // normalize: don't normalize the data
             0, // stride: 0 = move forward size * sizeof(type) each iteration to get the next position
             0) // offset: start at the beginning of the buffer
+    }
 
-        const color = context.getUniformLocation(program, "u_color")
-        context.uniform4f(color, ..._tint, 1.0)
+    const sendColor = (context, program) => {
+        context.bindBuffer(context.ARRAY_BUFFER, _colorBuffer)
+
+        const attribute = context.getAttribLocation(program, 'a_color')
+        context.enableVertexAttribArray(attribute)
+
+        // tell the attribute how to get data out of buffer (ARRAY_BUFFER)
+        context.vertexAttribPointer(attribute,
+            4, // size: 4 components per iteration
+            context.FLOAT, // type: the data is 32bit floats
+            false, // normalize: don't normalize the data
+            0, // stride: 0 = move forward size * sizeof(type) each iteration to get the next position
+            0) // offset: start at the beginning of the buffer
+    }
+
+    this.draw = (context, program, time) => {
+        context.useProgram(program)
+
+        sendPosition(context, program)
+        sendColor(context, program)
+
         context.drawArrays(context.TRIANGLES, // primitive type
             0, // offset
             3) //count
@@ -43,19 +69,23 @@ function Triangle(vertices, tint) {
 function Game() {
     this.objects = []
 
+    const rgb = [1.0, 0.0, 0.0, 1.0,
+                 0.0, 1.0, 0.0, 1.0,
+                 0.0, 0.0, 1.0, 1.0]
+
     this.initialize = context => {
         this.objects.push(new Triangle([0, 0,
                                         0, 0.5,
                                         0.7, 0],
-                                        [0.2, 0, 0.3, 1.0]))
+                                        rgb))
         this.objects.push(new Triangle([-0.5, -0.5,
                                         -0.9, -0.5,
                                         -0.5, -0.8],
-                                        [1.0, 1.0, 1.0, 1.0]))
+                                        rgb))
         this.objects.push(new Triangle([-0.5, 0.9,
                                         -0.9, 0.9,
                                         -0.5, 0.2],
-                                        [0.0, 0.0, 1.0, 1.0]))
+                                        rgb))
     }
 
     this.update = (context, time) => {
