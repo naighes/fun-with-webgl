@@ -76,18 +76,16 @@ function Game() {
                  0.0, 0.0, 1.0, 1.0]
 
     this.initialize = context => {
-        this.objects.push(new Triangle([0, 0,
-                                        0, 0.5,
-                                        0.7, 0],
-                                        rgb))
-        this.objects.push(new Triangle([-0.5, -0.5,
-                                        -0.9, -0.5,
-                                        -0.5, -0.8],
-                                        rgb))
-        this.objects.push(new Triangle([-0.5, 0.9,
-                                        -0.9, 0.9,
-                                        -0.5, 0.2],
-                                        rgb))
+        const triangles = [[0, 0,
+                            0, 0.5,
+                            0.7, 0],
+                           [-0.5, -0.5,
+                            -0.9, -0.5,
+                            -0.5, -0.8],
+                           [-0.5, 0.9,
+                            -0.9, 0.9,
+                            -0.5, 0.2]]
+        triangles.map(t => new Triangle(t, rgb)).forEach(t => this.objects.push(t))
     }
 
     this.update = (context, time) => {
