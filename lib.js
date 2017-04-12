@@ -15,6 +15,7 @@ const wgl = (canvasId, vs, fs, game) => {
 
         objects.forEach(obj => {
             const b = f(obj)
+
             if (typeof b === 'function') {
                 b(context, time)
             }
@@ -49,6 +50,7 @@ const wgl = (canvasId, vs, fs, game) => {
             }
 
             const program = buildProgram(context)
+
             return {
                 update: context => obj.update(context, program),
                 draw: context => obj.draw(context, program)

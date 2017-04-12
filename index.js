@@ -2,8 +2,9 @@ window.onload = () => {
     wgl('view', 'fx/vs.fx', 'fx/fs.fx', new Game())
 }
 
-function Triangle(vertices) {
+function Triangle(vertices, tint) {
     let _vertices = vertices
+    let _tint = tint
     let _buffer = null
 
     this.initialize = context => {
@@ -32,7 +33,7 @@ function Triangle(vertices) {
             0) // offset: start at the beginning of the buffer
 
         const color = context.getUniformLocation(program, "u_color")
-        context.uniform4f(color, 0.2, 0, 0.3, 1.0)
+        context.uniform4f(color, ..._tint, 1.0)
         context.drawArrays(context.TRIANGLES, // primitive type
             0, // offset
             3) //count
@@ -45,10 +46,16 @@ function Game() {
     this.initialize = context => {
         this.objects.push(new Triangle([0, 0,
                                         0, 0.5,
-                                        0.7, 0]))
+                                        0.7, 0],
+                                        [0.2, 0, 0.3, 1.0]))
         this.objects.push(new Triangle([-0.5, -0.5,
                                         -0.9, -0.5,
-                                        -0.5, -0.8]))
+                                        -0.5, -0.8],
+                                        [1.0, 1.0, 1.0, 1.0]))
+        this.objects.push(new Triangle([-0.5, 0.9,
+                                        -0.9, 0.9,
+                                        -0.5, 0.2],
+                                        [0.0, 0.0, 1.0, 1.0]))
     }
 
     this.update = (context, time) => {
