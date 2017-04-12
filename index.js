@@ -24,30 +24,15 @@ function Triangle(vertices, tint) {
     this.update = (context, program, time) => {
     }
 
-    const sendPosition = (context, program) => {
-        context.bindBuffer(context.ARRAY_BUFFER, _positionBuffer)
+    const sendData = (context, program, buffer, size, name) => {
+        context.bindBuffer(context.ARRAY_BUFFER, buffer)
 
-        const attribute = context.getAttribLocation(program, 'a_position')
+        const attribute = context.getAttribLocation(program, name)
         context.enableVertexAttribArray(attribute)
 
         // tell the attribute how to get data out of buffer (ARRAY_BUFFER)
         context.vertexAttribPointer(attribute,
-            2, // size: 2 components per iteration
-            context.FLOAT, // type: the data is 32bit floats
-            false, // normalize: don't normalize the data
-            0, // stride: 0 = move forward size * sizeof(type) each iteration to get the next position
-            0) // offset: start at the beginning of the buffer
-    }
-
-    const sendColor = (context, program) => {
-        context.bindBuffer(context.ARRAY_BUFFER, _colorBuffer)
-
-        const attribute = context.getAttribLocation(program, 'a_color')
-        context.enableVertexAttribArray(attribute)
-
-        // tell the attribute how to get data out of buffer (ARRAY_BUFFER)
-        context.vertexAttribPointer(attribute,
-            4, // size: 4 components per iteration
+            size, // size: # of components per iteration
             context.FLOAT, // type: the data is 32bit floats
             false, // normalize: don't normalize the data
             0, // stride: 0 = move forward size * sizeof(type) each iteration to get the next position
@@ -57,8 +42,8 @@ function Triangle(vertices, tint) {
     this.draw = (context, program, time) => {
         context.useProgram(program)
 
-        sendPosition(context, program)
-        sendColor(context, program)
+        sendData(context, program, _positionBuffer, 2, 'a_position')
+        sendData(context, program, _colorBuffer, 4, 'a_color')
 
         context.drawArrays(context.TRIANGLES, // primitive type
             0, // offset
