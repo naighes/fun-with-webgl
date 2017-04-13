@@ -34,6 +34,10 @@ function Game() {
     const rgb = [1.0, 0.0, 0.0, 1.0,
                  0.0, 1.0, 0.0, 1.0,
                  0.0, 0.0, 1.0, 1.0]
+    const rgbw = [1.0, 0.0, 0.0, 1.0,
+                  0.0, 1.0, 0.0, 1.0,
+                  0.0, 0.0, 1.0, 1.0,
+                  1.0, 1.0, 1.0, 1.0]
 
     const camera = new FixedCamera()
 
@@ -52,6 +56,9 @@ function Game() {
             t.camera = camera
             this.objects.push(t)
         })
+        const square = new Square(0, -1.1, 1, rgbw)
+        square.camera = camera
+        this.objects.push(square)
     }
 
     this.update = (context, time) => {
