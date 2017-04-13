@@ -2,6 +2,32 @@ window.onload = () => {
     wgl('view', 'fx/vs.fx', 'fx/fs.fx', new Game())
 }
 
+function FixedCamera() {
+    let mvp = mat4.create()
+
+    this.modelViewProjection = () => {
+        return mvp
+    }
+
+    const calculateModelViewProjection = context => {
+        const projection = mat4.create()
+        const aspect = context.canvas.clientWidth / context.canvas.clientHeight
+        mat4.perspective(projection, Math.PI/4, aspect, 1, 200)
+
+        const view = mat4.create()
+        mat4.lookAt(view, vec3.fromValues(0, 0, 3), vec3.fromValues(0, 0, 0), vec3.fromValues(0, 1, 0))
+
+        const mvp = mat4.create()
+        mat4.multiply(mvp, projection, view)
+
+        return mvp
+    }
+
+    this.initialize = context => {
+        mvp = calculateModelViewProjection(context)
+    }
+}
+
 function Triangle(vertices, tint) {
     let _vertices = vertices
     let _tint = tint
@@ -14,20 +40,6 @@ function Triangle(vertices, tint) {
         context.bufferData(context.ARRAY_BUFFER, new Float32Array(data), context.STATIC_DRAW)
 
         return buffer
-    }
-
-    const modelViewProjection = context => {
-        const projection = mat4.create()
-        const aspect = context.canvas.clientWidth / context.canvas.clientHeight
-        mat4.perspective(projection, Math.PI/4, aspect, 1, 200)
-
-        const view = mat4.create()
-        mat4.lookAt(view, vec3.fromValues(0, 0, 3), vec3.fromValues(0, 0, 0), vec3.fromValues(0, 1, 0))
-
-        const mvp = mat4.create()
-        mat4.multiply(mvp, projection, view)
-
-        return mvp
     }
 
     this.initialize = context => {
@@ -53,7 +65,7 @@ function Triangle(vertices, tint) {
             0) // offset: start at the beginning of the buffer
 
         const mvp = context.getUniformLocation(program, 'mvp')
-        context.uniformMatrix4fv(mvp, false, modelViewProjection(context))
+        context.uniformMatrix4fv(mvp, false, this.camera.modelViewProjection())
     }
 
     this.draw = (context, program, time) => {
@@ -75,6 +87,8 @@ function Game() {
                  0.0, 1.0, 0.0, 1.0,
                  0.0, 0.0, 1.0, 1.0]
 
+    const camera = new FixedCamera()
+
     this.initialize = context => {
         const triangles = [[0, 0,
                             0, 0.5,
@@ -85,7 +99,11 @@ function Game() {
                            [-0.5, 0.9,
                             -0.9, 0.9,
                             -0.5, 0.2]]
-        triangles.map(t => new Triangle(t, rgb)).forEach(t => this.objects.push(t))
+        this.objects.push(camera)
+        triangles.map(t => new Triangle(t, rgb)).forEach(t => {
+            t.camera = camera
+            this.objects.push(t)
+        })
     }
 
     this.update = (context, time) => {
