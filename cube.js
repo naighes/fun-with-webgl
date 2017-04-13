@@ -101,6 +101,6 @@ function Square(size) {
 
         context.drawArrays(context.TRIANGLES, // primitive type
             0, // offset
-            36) // count
+            vertices.length/3) // count
     }
 }
