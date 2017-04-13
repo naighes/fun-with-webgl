@@ -52,8 +52,8 @@ const wgl = (canvasId, vs, fs, game) => {
             const program = buildProgram(context)
 
             return {
-                update: context => typeof obj.update == 'function' ? obj.update(context, program) : () => { },
-                draw: context => typeof obj.draw == 'function' ? obj.draw(context, program) : () => { }
+                update: (context, time) => typeof obj.update == 'function' ? obj.update(context, program, time) : () => { },
+                draw: (context, time) => typeof obj.draw == 'function' ? obj.draw(context, program, time) : () => { }
             }
         })
     }

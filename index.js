@@ -26,7 +26,7 @@ function Game() {
             t.camera = camera
             this.objects.push(t)
         })
-        const square = new Square(1.0, -2.0, 0.0, 1, rgb)
+        const square = new Square(0.5)
         square.camera = camera
         this.objects.push(square)
     }
