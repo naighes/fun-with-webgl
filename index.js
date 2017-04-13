@@ -2,49 +2,19 @@ window.onload = () => {
     wgl('view', 'fx/vs.fx', 'fx/fs.fx', new Game())
 }
 
-function FixedCamera() {
-    let mvp = mat4.create()
-
-    this.modelViewProjection = () => {
-        return mvp
-    }
-
-    const calculateModelViewProjection = context => {
-        const projection = mat4.create()
-        const aspect = context.canvas.clientWidth / context.canvas.clientHeight
-        mat4.perspective(projection, Math.PI/4, aspect, 1, 200)
-
-        const view = mat4.create()
-        mat4.lookAt(view, vec3.fromValues(0, 0, 3), vec3.fromValues(0, 0, 0), vec3.fromValues(0, 1, 0))
-
-        const mvp = mat4.create()
-        mat4.multiply(mvp, projection, view)
-
-        return mvp
-    }
-
-    this.initialize = context => {
-        mvp = calculateModelViewProjection(context)
-    }
-}
-
 function Game() {
     this.objects = []
 
     const rgb = [1.0, 0.0, 0.0, 1.0,
                  0.0, 1.0, 0.0, 1.0,
                  0.0, 0.0, 1.0, 1.0]
-    const rgbw = [1.0, 0.0, 0.0, 1.0,
-                  0.0, 1.0, 0.0, 1.0,
-                  0.0, 0.0, 1.0, 1.0,
-                  1.0, 1.0, 1.0, 1.0]
 
     const camera = new FixedCamera()
 
     this.initialize = context => {
-        const triangles = [[0, 0,
-                            0, 0.5,
-                            0.7, 0],
+        const triangles = [[0, 0.5,
+                            0, 1.0,
+                            0.7, 0.5],
                            [-0.5, -0.5,
                             -0.9, -0.5,
                             -0.5, -0.8],
@@ -56,7 +26,7 @@ function Game() {
             t.camera = camera
             this.objects.push(t)
         })
-        const square = new Square(0, -1.1, 1, rgbw)
+        const square = new Square(1.0, -2.0, 0.0, 1, rgb)
         square.camera = camera
         this.objects.push(square)
     }

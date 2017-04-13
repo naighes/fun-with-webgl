@@ -1,5 +1,5 @@
-function Square(originX, originY, size, tint) {
-    let _tint = tint
+function Square(originX, originY, originZ, size, tint) {
+    let _tint = tint.concat([tint[0]])
     let _positionBuffer = null
     let _colorBuffer = null
 
@@ -12,10 +12,10 @@ function Square(originX, originY, size, tint) {
     }
 
     this.initialize = context => {
-        const data = [originX, originY + size,
-                      originX, originY,
-                      originX + size, originY + size,
-                      originX + size, originY]
+        const data = [originX, originY + size, originZ,
+                      originX, originY, originZ,
+                      originX + size, originY + size, originZ,
+                      originX + size, originY, originZ]
         _positionBuffer = createBuffer(context, data)
         _colorBuffer = createBuffer(context, _tint)
     }
@@ -36,19 +36,27 @@ function Square(originX, originY, size, tint) {
             false, // normalize: don't normalize the data
             0, // stride: 0 = move forward size * sizeof(type) each iteration to get the next position
             0) // offset: start at the beginning of the buffer
+        let rx = mat4.create()
+        mat4.fromXRotation(rx, Math.PI/6)
+        let ry = mat4.create()
+        mat4.fromYRotation(ry, Math.PI/4)
+        let rxry = mat4.create()
+        mat4.multiply(rxry, rx, ry)
+        let world = mat4.create()
+        mat4.multiply(world, rx, ry)
 
         const mvp = context.getUniformLocation(program, 'mvp')
-        context.uniformMatrix4fv(mvp, false, this.camera.modelViewProjection())
+        context.uniformMatrix4fv(mvp, false, this.camera.calculateModelViewProjection(context, world))
     }
 
     this.draw = (context, program, time) => {
         context.useProgram(program)
 
-        sendData(context, program, _positionBuffer, 2, 'a_position')
-        sendData(context, program, _colorBuffer, 4, 'a_color')
+        sendData(context, program, _positionBuffer, 3, 'a_position')
+        sendData(context, program, _colorBuffer, 3, 'a_color')
 
         context.drawArrays(context.TRIANGLE_STRIP, // primitive type
             0, // offset
-            4) //count
+            4) // count
     }
 }

@@ -1,6 +1,4 @@
 function Triangle(vertices, tint) {
-    let _vertices = vertices
-    let _tint = tint
     let _positionBuffer = null
     let _colorBuffer = null
 
@@ -13,8 +11,8 @@ function Triangle(vertices, tint) {
     }
 
     this.initialize = context => {
-        _positionBuffer = createBuffer(context, _vertices)
-        _colorBuffer = createBuffer(context, _tint)
+        _positionBuffer = createBuffer(context, vertices)
+        _colorBuffer = createBuffer(context, tint)
     }
 
     this.update = (context, program, time) => {
@@ -34,8 +32,9 @@ function Triangle(vertices, tint) {
             0, // stride: 0 = move forward size * sizeof(type) each iteration to get the next position
             0) // offset: start at the beginning of the buffer
 
+        const world = mat4.create()
         const mvp = context.getUniformLocation(program, 'mvp')
-        context.uniformMatrix4fv(mvp, false, this.camera.modelViewProjection())
+        context.uniformMatrix4fv(mvp, false, this.camera.calculateModelViewProjection(context, world))
     }
 
     this.draw = (context, program, time) => {
