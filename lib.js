@@ -1,4 +1,4 @@
-const wgl = (canvasId, vs, fs, game) => {
+const wgl = (canvasId, game) => {
     const canvas = document.getElementById(canvasId)
     const context = getContext(canvas)
 
@@ -37,7 +37,7 @@ const wgl = (canvasId, vs, fs, game) => {
         })
     }
 
-    const initialize = (context, buildProgram) => {
+    const initialize = (context, programs) => {
         if (typeof game.initialize === 'function') {
             game.initialize(context)
         }
@@ -45,11 +45,11 @@ const wgl = (canvasId, vs, fs, game) => {
         const objects = game.objects || []
 
         return objects.map(obj => {
+            const program = programs[obj.shaderName]
+
             if (typeof obj.initialize === 'function') {
                 obj.initialize(context)
             }
-
-            const program = buildProgram(context)
 
             return {
                 update: (context, time) => typeof obj.update == 'function' ? obj.update(context, program, time) : () => { },
@@ -58,11 +58,21 @@ const wgl = (canvasId, vs, fs, game) => {
         })
     }
 
-    return Promise.all([parseShaderSource(vs, context.VERTEX_SHADER),
-        parseShaderSource(fs, context.FRAGMENT_SHADER)])
-        .then(values => values.map(value => createShader(context, value.type, value.content)))
-        .then(values => context => createProgram(context, values))
-        .then(buildProgram => initialize(context, buildProgram))
+    return Promise.all(Object.keys(game.shaders).map(key => Promise.all([parseShaderSource(game.shaders[key].vs, context.VERTEX_SHADER),
+            parseShaderSource(game.shaders[key].fs, context.FRAGMENT_SHADER)])
+            .then(values => {
+                const result = { }
+                result[key] = values.map(v => createShader(context, v.type, v.content))
+
+                return result
+            })))
+        .then(result => result.reduce((o, c) => {
+            const key = Object.keys(c)[0]
+            o[key] = createProgram(context, c[key])
+
+            return o
+        }, { }))
+        .then(result => initialize(context, result))
         .then(objects => loop(context, objects, {
             totalGameTime: 0,
             delta: 0,

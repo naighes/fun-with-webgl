@@ -1,9 +1,13 @@
 window.onload = () => {
-    wgl('view', 'fx/vs.fx', 'fx/fs.fx', new Game())
+    wgl('view', new Game())
 }
 
 function Game() {
     this.objects = []
+
+    this.shaders = {
+        'default': { vs: 'fx/vs.fx', fs: 'fx/fs.fx' }
+    }
 
     const rgb = [1.0, 0.0, 0.0, 1.0,
                  0.0, 1.0, 0.0, 1.0,

@@ -10,6 +10,8 @@ function Triangle(vertices, tint) {
         return buffer
     }
 
+    this.shaderName = 'default'
+
     this.initialize = context => {
         _positionBuffer = createBuffer(context, vertices)
         _colorBuffer = createBuffer(context, tint)

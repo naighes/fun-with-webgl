@@ -1,4 +1,6 @@
 function Square(size) {
+    this.shaderName = 'default'
+
     const r = [1.0, 0.0, 0.0, 1.0],
           g = [0.0, 1.0, 0.0, 1.0],
           b = [0.0, 0.0, 1.0, 1.0],
