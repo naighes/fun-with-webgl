@@ -30,9 +30,14 @@ function Game() {
             t.camera = camera
             this.objects.push(t)
         })
-        const square = new ColoredCube(0.5)
-        square.camera = camera
-        this.objects.push(square)
+
+        const cube1 = new ColoredCube(0.2)
+        cube1.camera = camera
+        this.objects.push(cube1)
+
+        const cube2 = new TexturedCube(0.8)
+        cube2.camera = camera
+        this.objects.push(cube2)
     }
 
     this.update = (context, time) => {

@@ -1,4 +1,4 @@
-function ColoredCube(size) {
+function TexturedCube(size) {
     this.shaderName = 'default'
 
     const r = [1.0, 0.0, 0.0, 1.0],
@@ -73,8 +73,16 @@ function ColoredCube(size) {
         const ry = mat4.create()
         mat4.fromYRotation(ry, _yRot)
 
+        const rxry = mat4.create()
+        mat4.multiply(rxry, rx, ry)
+
+        const translation = vec3.create()
+        vec3.set(translation, 0.7, -1.0, -2.0)
+        const t = mat4.create()
+        mat4.translate(t, t, translation)
+
         const world = mat4.create()
-        mat4.multiply(world, rx, ry)
+        mat4.multiply(world, t, rxry)
 
         _mvp = this.camera.calculateModelViewProjection(context, world)
     }
