@@ -26,6 +26,6 @@ function FixedCamera() {
         return modelViewProjection
     }
 
-    this.initialize = context => {
+    this.initialize = (context, content) => {
     }
 }

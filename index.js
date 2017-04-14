@@ -5,9 +5,16 @@ window.onload = () => {
 function Game() {
     this.objects = []
 
-    this.shaders = {
-        'colored': { vs: 'fx/colored-vs.fx', fs: 'fx/colored-fs.fx' },
-        'textured': { vs: 'fx/textured-vs.fx', fs: 'fx/textured-fs.fx' }
+    this.config = {
+        shaders: {
+            'colored': { vs: 'fx/colored-vs.fx', fs: 'fx/colored-fs.fx' },
+            'textured': { vs: 'fx/textured-vs.fx', fs: 'fx/textured-fs.fx' }
+        },
+        resources: {
+            'metal-box': {
+                src: 'img/metal_box.jpg'
+            }
+        }
     }
 
     const rgb = [1.0, 0.0, 0.0, 1.0,
@@ -32,11 +39,11 @@ function Game() {
             this.objects.push(t)
         })
 
-        const cube1 = new ColoredCube(0.2)
+        const cube1 = new ColoredCube(0.5)
         cube1.camera = camera
         this.objects.push(cube1)
 
-        const cube2 = new TexturedCube(0.8)
+        const cube2 = new TexturedCube(1.3)
         cube2.camera = camera
         this.objects.push(cube2)
     }
@@ -45,7 +52,7 @@ function Game() {
     }
 
     this.draw = (context, time) => {
-        context.clearColor(0.392157, 0.584314, 0.929412, 1.0)
+        context.clearColor(0.0, 0.0, 0.0, 1.0)
         // enable depth testing
         context.enable(context.DEPTH_TEST)
         // near things obscure far things

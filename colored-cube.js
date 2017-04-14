@@ -1,6 +1,4 @@
 function ColoredCube(size) {
-    this.shaderName = 'colored'
-
     const r = [1.0, 0.0, 0.0, 1.0],
           g = [0.0, 1.0, 0.0, 1.0],
           b = [0.0, 0.0, 1.0, 1.0],
@@ -44,11 +42,12 @@ function ColoredCube(size) {
                 v5, v1, v6,
                 v2, v6, v1)
 
-    let _positionBuffer = null
-    let _colorBuffer = null
-    let _mvp = null
-    let _xRot = Math.PI
-    let _yRot = Math.PI
+    let positionBuffer = null
+    let colorBuffer = null
+    let program = null
+    let mvp = null
+    let xRot = Math.PI
+    let yRot = Math.PI
 
     const createBuffer = (context, data) => {
         const buffer = context.createBuffer()
@@ -56,27 +55,6 @@ function ColoredCube(size) {
         context.bufferData(context.ARRAY_BUFFER, new Float32Array(data), context.STATIC_DRAW)
 
         return buffer
-    }
-
-    this.initialize = context => {
-        _positionBuffer = createBuffer(context, vertices)
-        _colorBuffer = createBuffer(context, colors)
-    }
-
-    this.update = (context, program, time) => {
-        _xRot += time.delta
-        _yRot += time.delta/3
-
-        const rx = mat4.create()
-        mat4.fromXRotation(rx, _xRot)
-
-        const ry = mat4.create()
-        mat4.fromYRotation(ry, _yRot)
-
-        const world = mat4.create()
-        mat4.multiply(world, rx, ry)
-
-        _mvp = this.camera.calculateModelViewProjection(context, world)
     }
 
     const sendData = (context, program, buffer, size, name) => {
@@ -94,14 +72,43 @@ function ColoredCube(size) {
             0) // offset: start at the beginning of the buffer
     }
 
-    this.draw = (context, program, time) => {
+    this.initialize = (context, content) => {
+        positionBuffer = createBuffer(context, vertices)
+        colorBuffer = createBuffer(context, colors)
+        program = content.programs['colored']
+    }
+
+    this.update = (context, time) => {
+        xRot += time.delta
+        yRot += time.delta/3
+
+        const rx = mat4.create()
+        mat4.fromXRotation(rx, xRot)
+
+        const ry = mat4.create()
+        mat4.fromYRotation(ry, yRot)
+
+        const rxry = mat4.create()
+        mat4.multiply(rxry, rx, ry)
+
+        const translation = vec3.create()
+        vec3.set(translation, -1.1, 0.0, 0.0)
+        const t = mat4.create()
+        mat4.translate(t, t, translation)
+
+        const world = mat4.create()
+        mat4.multiply(world, t, rxry)
+
+        mvp = this.camera.calculateModelViewProjection(context, world)
+    }
+
+    this.draw = (context, time) => {
         context.useProgram(program)
 
-        sendData(context, program, _positionBuffer, 3, 'a_position')
-        sendData(context, program, _colorBuffer, 4, 'a_color')
+        sendData(context, program, positionBuffer, 3, 'a_position')
+        sendData(context, program, colorBuffer, 4, 'a_color')
 
-        const mvp = context.getUniformLocation(program, 'mvp')
-        context.uniformMatrix4fv(mvp, false, _mvp)
+        context.uniformMatrix4fv(context.getUniformLocation(program, 'mvp'), false, mvp)
 
         context.drawArrays(context.TRIANGLES, // primitive type
             0, // offset

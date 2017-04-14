@@ -37,23 +37,21 @@ const wgl = (canvasId, game) => {
         })
     }
 
-    const initialize = (context, programs) => {
+    const initialize = (context, content) => {
         if (typeof game.initialize === 'function') {
-            game.initialize(context)
+            game.initialize(context, content)
         }
 
         const objects = game.objects || []
 
         return objects.map(obj => {
-            const program = programs[obj.shaderName]
-
             if (typeof obj.initialize === 'function') {
-                obj.initialize(context)
+                obj.initialize(context, content)
             }
 
             return {
-                update: (context, time) => typeof obj.update == 'function' ? obj.update(context, program, time) : () => { },
-                draw: (context, time) => typeof obj.draw == 'function' ? obj.draw(context, program, time) : () => { }
+                update: (context, time) => typeof obj.update == 'function' ? obj.update(context, time) : () => { },
+                draw: (context, time) => typeof obj.draw == 'function' ? obj.draw(context, time) : () => { }
             }
         })
     }
@@ -68,14 +66,42 @@ const wgl = (canvasId, game) => {
                 return result
             }))
 
-    return Promise.all(loadShaders(context, game.shaders))
+    const ls = Promise.all(loadShaders(context, game.config.shaders))
         .then(result => result.reduce((o, c) => {
             const key = Object.keys(c)[0]
             o[key] = createProgram(context, c[key])
 
             return o
         }, { }))
-        .then(result => initialize(context, result))
+
+    const fetchImage = resource => new Promise((resolve, reject) => {
+        resource.img = new Image()
+        resource.img.onload = () => {
+            resolve(resource)
+        }
+        resource.img.src = resource.src
+    })
+
+    const lr = Promise.all(Object.keys(game.config.resources)
+        .map(key => fetchImage(game.config.resources[key])
+            .then(r => {
+                const result = { }
+                result[key] = r
+
+                return result
+            })))
+        .then(result => result.reduce((o, c) => {
+            const key = Object.keys(c)[0]
+            o[key] = c[key]
+
+            return o
+        }, { }))
+
+    return Promise.all([ls, lr])
+        .then(result => initialize(context, {
+            programs: result[0],
+            resources: result[1]
+        }))
         .then(objects => loop(context, objects, {
             totalGameTime: 0,
             delta: 0,
@@ -141,4 +167,3 @@ const createProgram = (context, shaders) => {
     context.deleteProgram(program)
     throw new Error(`SHADER LINKING ERROR: "${e}"`)
 }
-

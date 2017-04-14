@@ -1,13 +1,15 @@
 function TexturedCube(size) {
-    this.shaderName = 'textured'
+    const oo = [0.0, 0.0],
+          io = [1.0, 0.0],
+          ii = [1.0, 1.0],
+          oi = [0.0, 1.0]
 
-    const r = [0.0, 0.0], g = [1.0, 0.0], b = [1.0, 1.0], w = [0.0, 1.0]
-    const textureCoords = [].concat(r, g, b, w, b, g,
-                                    b, w, g, r, g, w,
-                                    g, r, w, b, w, r,
-                                    w, b, r, g, r, b,
-                                    g, b, w, r, w, b,
-                                    g, b, w, r, w, b)
+    const textureCoords = [].concat(io, ii, oo, oi, oo, ii,
+                                    io, ii, oo, oi, oo, ii,
+                                    io, ii, oo, oi, oo, ii,
+                                    io, ii, oo, oi, oo, ii,
+                                    io, ii, oo, oi, oo, ii,
+                                    io, ii, oo, oi, oo, ii)
 
     const s = size/2
 
@@ -40,11 +42,13 @@ function TexturedCube(size) {
                 v5, v1, v6,
                 v2, v6, v1)
 
-    let _positionBuffer = null
-    let _textureBuffer = null
-    let _mvp = null
-    let _xRot = Math.PI
-    let _yRot = Math.PI
+    let positionBuffer = null
+    let textureBuffer = null
+    let program = null
+    let textureImg = null
+    let mvp = null
+    let xRot = Math.PI
+    let yRot = Math.PI
 
     const createBuffer = (context, data) => {
         const buffer = context.createBuffer()
@@ -52,35 +56,6 @@ function TexturedCube(size) {
         context.bufferData(context.ARRAY_BUFFER, new Float32Array(data), context.STATIC_DRAW)
 
         return buffer
-    }
-
-    this.initialize = context => {
-        _positionBuffer = createBuffer(context, vertices)
-        _textureBuffer = createBuffer(context, textureCoords)
-    }
-
-    this.update = (context, program, time) => {
-        _xRot += time.delta
-        _yRot += time.delta/3
-
-        const rx = mat4.create()
-        mat4.fromXRotation(rx, _xRot)
-
-        const ry = mat4.create()
-        mat4.fromYRotation(ry, _yRot)
-
-        const rxry = mat4.create()
-        mat4.multiply(rxry, rx, ry)
-
-        const translation = vec3.create()
-        vec3.set(translation, 0.7, -1.0, -2.0)
-        const t = mat4.create()
-        mat4.translate(t, t, translation)
-
-        const world = mat4.create()
-        mat4.multiply(world, t, rxry)
-
-        _mvp = this.camera.calculateModelViewProjection(context, world)
     }
 
     const sendData = (context, program, buffer, size, name) => {
@@ -98,29 +73,55 @@ function TexturedCube(size) {
             0) // offset: start at the beginning of the buffer
     }
 
-    this.draw = (context, program, time) => {
+    this.initialize = (context, content) => {
+        positionBuffer = createBuffer(context, vertices)
+        textureBuffer = createBuffer(context, textureCoords)
+        program = content.programs['textured']
+        textureImg = content.resources['metal-box'].img
+    }
+
+    this.update = (context, time) => {
+        xRot += time.delta/2
+        yRot += time.delta/6
+
+        const rx = mat4.create()
+        mat4.fromXRotation(rx, xRot)
+
+        const ry = mat4.create()
+        mat4.fromYRotation(ry, yRot)
+
+        const rxry = mat4.create()
+        mat4.multiply(rxry, rx, ry)
+
+        const translation = vec3.create()
+        vec3.set(translation, 0.55, -0.8, -2.0)
+        const t = mat4.create()
+        mat4.translate(t, t, translation)
+
+        const world = mat4.create()
+        mat4.multiply(world, t, rxry)
+
+        mvp = this.camera.calculateModelViewProjection(context, world)
+    }
+
+    this.draw = (context, time) => {
         context.useProgram(program)
 
-        sendData(context, program, _positionBuffer, 3, 'a_position')
-        sendData(context, program, _textureBuffer, 2, 'a_texcoord')
+        sendData(context, program, positionBuffer, 3, 'a_position')
+        sendData(context, program, textureBuffer, 2, 'a_texcoord')
 
-        // create a texture.
+        // create and bind a texture.
         const texture = context.createTexture()
         context.bindTexture(context.TEXTURE_2D, texture)
-
-        // fill the texture with a 1x1 blue pixel.
         context.texImage2D(context.TEXTURE_2D,
             0,
             context.RGBA,
-            1,
-            1,
-            0,
             context.RGBA,
             context.UNSIGNED_BYTE,
-            new Uint8Array([0, 0, 255, 255]))
+            textureImg)
+        context.generateMipmap(context.TEXTURE_2D)
 
-        const mvp = context.getUniformLocation(program, 'mvp')
-        context.uniformMatrix4fv(mvp, false, _mvp)
+        context.uniformMatrix4fv(context.getUniformLocation(program, 'mvp'), false, mvp)
 
         context.drawArrays(context.TRIANGLES, // primitive type
             0, // offset

@@ -1,6 +1,7 @@
 function Triangle(vertices, tint) {
-    let _positionBuffer = null
-    let _colorBuffer = null
+    let positionBuffer = null
+    let colorBuffer = null
+    let program = null
 
     const createBuffer = (context, data) => {
         const buffer = context.createBuffer()
@@ -8,16 +9,6 @@ function Triangle(vertices, tint) {
         context.bufferData(context.ARRAY_BUFFER, new Float32Array(data), context.STATIC_DRAW)
 
         return buffer
-    }
-
-    this.shaderName = 'colored'
-
-    this.initialize = context => {
-        _positionBuffer = createBuffer(context, vertices)
-        _colorBuffer = createBuffer(context, tint)
-    }
-
-    this.update = (context, program, time) => {
     }
 
     const sendData = (context, program, buffer, size, name) => {
@@ -39,11 +30,20 @@ function Triangle(vertices, tint) {
         context.uniformMatrix4fv(mvp, false, this.camera.calculateModelViewProjection(context, world))
     }
 
-    this.draw = (context, program, time) => {
+    this.initialize = (context, content) => {
+        positionBuffer = createBuffer(context, vertices)
+        colorBuffer = createBuffer(context, tint)
+        program = content.programs['colored']
+    }
+
+    this.update = (context, time) => {
+    }
+
+    this.draw = (context, time) => {
         context.useProgram(program)
 
-        sendData(context, program, _positionBuffer, 2, 'a_position')
-        sendData(context, program, _colorBuffer, 4, 'a_color')
+        sendData(context, program, positionBuffer, 2, 'a_position')
+        sendData(context, program, colorBuffer, 4, 'a_color')
 
         context.drawArrays(context.TRIANGLE_STRIP, // primitive type
             0, // offset
