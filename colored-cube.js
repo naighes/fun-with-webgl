@@ -1,4 +1,4 @@
-function Square(size) {
+function ColoredCube(size) {
     this.shaderName = 'default'
 
     const r = [1.0, 0.0, 0.0, 1.0],

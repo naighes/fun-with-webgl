@@ -30,7 +30,7 @@ function Game() {
             t.camera = camera
             this.objects.push(t)
         })
-        const square = new Square(0.5)
+        const square = new ColoredCube(0.5)
         square.camera = camera
         this.objects.push(square)
     }
