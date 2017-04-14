@@ -1,8 +1,8 @@
 // an attribute will receive data from a buffer
 attribute vec4 a_position;
-attribute vec4 a_color;
+attribute vec2 a_texcoord;
 uniform mat4 mvp;
-varying lowp vec4 vColor;
+varying vec2 v_texcoord;
 
 // all shaders have a main function
 void main() {
@@ -10,6 +10,6 @@ void main() {
     // is responsible for setting (clip space)
 
     gl_Position = mvp * a_position;
-    vColor = a_color;
+    v_texcoord = a_texcoord;
 }
 

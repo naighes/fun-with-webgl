@@ -92,9 +92,6 @@ function ColoredCube(size) {
             false, // normalize: don't normalize the data
             0, // stride: 0 = move forward size * sizeof(type) each iteration to get the next position
             0) // offset: start at the beginning of the buffer
-
-        const mvp = context.getUniformLocation(program, 'mvp')
-        context.uniformMatrix4fv(mvp, false, _mvp)
     }
 
     this.draw = (context, program, time) => {
@@ -102,6 +99,9 @@ function ColoredCube(size) {
 
         sendData(context, program, _positionBuffer, 3, 'a_position')
         sendData(context, program, _colorBuffer, 4, 'a_color')
+
+        const mvp = context.getUniformLocation(program, 'mvp')
+        context.uniformMatrix4fv(mvp, false, _mvp)
 
         context.drawArrays(context.TRIANGLES, // primitive type
             0, // offset

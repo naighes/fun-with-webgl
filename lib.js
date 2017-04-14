@@ -121,8 +121,9 @@ const createShader = (context, type, source) => {
         return shader
     }
 
+    const e = context.getShaderInfoLog(shader)
     context.deleteShader(shader)
-    throw new Error(context.getShaderInfoLog(shader))
+    throw new Error(`SHADER COMPILING ERROR: "${e}"\n${source}`)
 }
 
 const createProgram = (context, shaders) => {
@@ -136,7 +137,8 @@ const createProgram = (context, shaders) => {
         return program
     }
 
+    const e = context.getProgramInfoLog(program)
     context.deleteProgram(program)
-    throw new Error(context.getProgramInfoLog(program))
+    throw new Error(`SHADER LINKING ERROR: "${e}"`)
 }
 
