@@ -1,5 +1,5 @@
 function ColoredCube(size) {
-    this.shaderName = 'default'
+    this.shaderName = 'colored'
 
     const r = [1.0, 0.0, 0.0, 1.0],
           g = [0.0, 1.0, 0.0, 1.0],

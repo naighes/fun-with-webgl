@@ -1,5 +1,5 @@
 function TexturedCube(size) {
-    this.shaderName = 'default'
+    this.shaderName = 'textured'
 
     const r = [1.0, 0.0, 0.0, 1.0],
           g = [0.0, 1.0, 0.0, 1.0],

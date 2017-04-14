@@ -6,7 +6,8 @@ function Game() {
     this.objects = []
 
     this.shaders = {
-        'default': { vs: 'fx/vs.fx', fs: 'fx/fs.fx' }
+        'colored': { vs: 'fx/colored-vs.fx', fs: 'fx/colored-fs.fx' },
+        'textured': { vs: 'fx/textured-vs.fx', fs: 'fx/textured-fs.fx' }
     }
 
     const rgb = [1.0, 0.0, 0.0, 1.0,
