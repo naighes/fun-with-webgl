@@ -58,14 +58,17 @@ const wgl = (canvasId, game) => {
         })
     }
 
-    return Promise.all(Object.keys(game.shaders).map(key => Promise.all([parseShaderSource(game.shaders[key].vs, context.VERTEX_SHADER),
-            parseShaderSource(game.shaders[key].fs, context.FRAGMENT_SHADER)])
+    const loadShaders = (context, shaders) => Object.keys(shaders)
+        .map(key => Promise.all([fetch(shaders[key].vs, context.VERTEX_SHADER),
+            fetch(shaders[key].fs, context.FRAGMENT_SHADER)])
             .then(values => {
                 const result = { }
                 result[key] = values.map(v => createShader(context, v.type, v.content))
 
                 return result
-            })))
+            }))
+
+    return Promise.all(loadShaders(context, game.shaders))
         .then(result => result.reduce((o, c) => {
             const key = Object.keys(c)[0]
             o[key] = createProgram(context, c[key])
@@ -92,7 +95,7 @@ const getContext = canvas => {
     return context
 }
 
-const parseShaderSource = (path, type) => {
+const fetch = (path, type) => {
     return new Promise((resolve, reject) => {
         let request = new XMLHttpRequest()
         request.open('GET', path, true)
