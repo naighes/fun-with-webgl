@@ -3,6 +3,8 @@ function Triangle(vertices, tint) {
     let colorBuffer = null
     let program = null
 
+    const lightDirection = vec3.normalize(vec3.create(), vec3.fromValues(0.5, 0.7, 1))
+
     const createBuffer = (context, data) => {
         const buffer = context.createBuffer()
         context.bindBuffer(context.ARRAY_BUFFER, buffer)
@@ -24,19 +26,29 @@ function Triangle(vertices, tint) {
             false, // normalize: don't normalize the data
             0, // stride: 0 = move forward size * sizeof(type) each iteration to get the next position
             0) // offset: start at the beginning of the buffer
-
-        const world = mat4.create()
-        const mvp = context.getUniformLocation(program, 'mvp')
-        context.uniformMatrix4fv(mvp, false, this.camera.calculateModelViewProjection(context, world))
     }
 
     this.initialize = (context, content) => {
         positionBuffer = createBuffer(context, vertices)
         colorBuffer = createBuffer(context, tint)
-        program = content.programs['colored']
+        program = content.programs['colored-triangle']
     }
 
     this.update = (context, time) => {
+        context.useProgram(program)
+
+        const world = mat4.create()
+
+        context.uniformMatrix4fv(context.getUniformLocation(program, "u_world"),
+            false,
+            world)
+
+        context.uniformMatrix4fv(context.getUniformLocation(program, 'u_worldViewProjection'),
+            false,
+            this.camera.calculateModelViewProjection(context, world))
+
+        context.uniform3fv(context.getUniformLocation(program, "u_reverseLightDirection"),
+            lightDirection)
     }
 
     this.draw = (context, time) => {

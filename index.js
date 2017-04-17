@@ -7,8 +7,9 @@ function Game() {
 
     this.config = {
         shaders: {
-            'colored': { vs: 'fx/colored-vs.fx', fs: 'fx/colored-fs.fx' },
-            'textured': { vs: 'fx/textured-vs.fx', fs: 'fx/textured-fs.fx' }
+            'colored-cube': { vs: 'fx/colored-cube-vs.fx', fs: 'fx/colored-cube-fs.fx' },
+            'textured-cube': { vs: 'fx/textured-cube-vs.fx', fs: 'fx/textured-cube-fs.fx' },
+            'colored-triangle': { vs: 'fx/colored-triangle-vs.fx', fs: 'fx/colored-triangle-fs.fx' }
         },
         resources: {
             'metal-box': {

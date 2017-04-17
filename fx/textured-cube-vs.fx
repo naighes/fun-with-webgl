@@ -1,15 +1,21 @@
 // an attribute will receive data from a buffer
 attribute vec4 a_position;
 attribute vec2 a_texcoord;
-uniform mat4 mvp;
+attribute vec3 a_normal;
+
+uniform mat4 u_worldViewProjection;
+uniform mat4 u_world;
+
 varying vec2 v_texcoord;
+varying vec3 v_normal;
 
 // all shaders have a main function
 void main() {
     // gl_Position is a special variable a vertex shader
     // is responsible for setting (clip space)
 
-    gl_Position = mvp * a_position;
+    gl_Position = u_worldViewProjection * a_position;
     v_texcoord = a_texcoord;
+    v_normal = mat3(u_world) * a_normal;
 }
 

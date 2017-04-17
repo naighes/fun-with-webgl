@@ -1,4 +1,30 @@
 function ColoredCube(size) {
+    const xp = [1.0, 0.0, 0.0],
+          xn = [-1.0, 0.0, 0.0],
+          yp = [0.0, 1.0, 0.0],
+          yn = [0.0, -1.0, 0.0],
+          zp = [0.0, 0.0, -1.0],
+          zn = [0.0, 0.0, 1.0]
+
+    const oo = [0.0, 0.0],
+          io = [1.0, 0.0],
+          ii = [1.0, 1.0],
+          oi = [0.0, 1.0]
+
+    const normals = []
+        .concat(zp, zp, zp,
+                zp, zp, zp,
+                xn, xn, xn,
+                xn, xn, xn,
+                zn, zn, zn,
+                zn, zn, zn,
+                xp, xp, xp,
+                xp, xp, xp,
+                yp, yp, yp,
+                yp, yp, yp,
+                yn, yn, yn,
+                yn, yn, yn)
+
     const r = [1.0, 0.0, 0.0, 1.0],
           g = [0.0, 1.0, 0.0, 1.0],
           b = [0.0, 0.0, 1.0, 1.0],
@@ -42,10 +68,12 @@ function ColoredCube(size) {
                 v5, v1, v6,
                 v2, v6, v1)
 
+    const lightDirection = vec3.normalize(vec3.create(), vec3.fromValues(0.5, 0.7, 1))
+
     let positionBuffer = null
     let colorBuffer = null
+    let normalsBuffer = null
     let program = null
-    let mvp = null
     let xRot = Math.PI
     let yRot = Math.PI
 
@@ -75,10 +103,13 @@ function ColoredCube(size) {
     this.initialize = (context, content) => {
         positionBuffer = createBuffer(context, vertices)
         colorBuffer = createBuffer(context, colors)
-        program = content.programs['colored']
+        normalsBuffer = createBuffer(context, normals)
+        program = content.programs['colored-cube']
     }
 
     this.update = (context, time) => {
+        context.useProgram(program)
+
         xRot += time.delta
         yRot += time.delta/3
 
@@ -99,7 +130,16 @@ function ColoredCube(size) {
         const world = mat4.create()
         mat4.multiply(world, t, rxry)
 
-        mvp = this.camera.calculateModelViewProjection(context, world)
+        context.uniformMatrix4fv(context.getUniformLocation(program, "u_world"),
+            false,
+            world)
+
+        context.uniformMatrix4fv(context.getUniformLocation(program, 'u_worldViewProjection'),
+            false,
+            this.camera.calculateModelViewProjection(context, world))
+
+        context.uniform3fv(context.getUniformLocation(program, "u_reverseLightDirection"),
+            lightDirection)
     }
 
     this.draw = (context, time) => {
@@ -107,8 +147,7 @@ function ColoredCube(size) {
 
         sendData(context, program, positionBuffer, 3, 'a_position')
         sendData(context, program, colorBuffer, 4, 'a_color')
-
-        context.uniformMatrix4fv(context.getUniformLocation(program, 'mvp'), false, mvp)
+        sendData(context, program, normalsBuffer, 3, 'a_normal')
 
         context.drawArrays(context.TRIANGLES, // primitive type
             0, // offset
