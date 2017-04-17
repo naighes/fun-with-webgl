@@ -44,7 +44,7 @@ function Game() {
         cube1.camera = camera
         this.objects.push(cube1)
 
-        const cube2 = new TexturedCube(1.3)
+        const cube2 = new TexturedCube(1.3, 'metal-box')
         cube2.camera = camera
         this.objects.push(cube2)
     }

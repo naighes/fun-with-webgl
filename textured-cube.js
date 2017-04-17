@@ -1,4 +1,4 @@
-function TexturedCube(size) {
+function TexturedCube(size, assetName) {
     const xp = [1.0, 0.0, 0.0],
           xn = [-1.0, 0.0, 0.0],
           yp = [0.0, 1.0, 0.0],
@@ -101,7 +101,7 @@ function TexturedCube(size) {
         textureBuffer = createBuffer(context, textureCoords)
         normalsBuffer = createBuffer(context, normals)
         program = content.programs['textured-cube']
-        textureImg = content.resources['metal-box'].img
+        textureImg = content.resources[assetName].img
     }
 
     this.update = (context, time) => {
