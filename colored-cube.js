@@ -19,6 +19,7 @@ function ColoredCube(size) {
     let colorBuffer = null
     let normalsBuffer = null
     let program = null
+    let attributes = null
     let xRot = Math.PI
     let yRot = Math.PI
 
@@ -30,10 +31,10 @@ function ColoredCube(size) {
         return buffer
     }
 
-    const sendData = (context, program, buffer, size, name) => {
+    const sendData = (context, buffer, size, name) => {
         context.bindBuffer(context.ARRAY_BUFFER, buffer)
 
-        const attribute = context.getAttribLocation(program, name)
+        const attribute = attributes[name]
         context.enableVertexAttribArray(attribute)
 
         // tell the attribute how to get data out of buffer (ARRAY_BUFFER)
@@ -50,6 +51,14 @@ function ColoredCube(size) {
         colorBuffer = createBuffer(context, colors)
         normalsBuffer = createBuffer(context, cube.normals)
         program = content.programs['colored-cube']
+        attributes = {
+            'u_world': context.getUniformLocation(program, 'u_world'),
+            'u_worldViewProjection': context.getUniformLocation(program, 'u_worldViewProjection'),
+            'u_reverseLightDirection': context.getUniformLocation(program, 'u_reverseLightDirection'),
+            'a_position': context.getAttribLocation(program, 'a_position'),
+            'a_color': context.getAttribLocation(program, 'a_color'),
+            'a_normal': context.getAttribLocation(program, 'a_normal')
+        }
     }
 
     this.update = (context, time) => {
@@ -75,24 +84,24 @@ function ColoredCube(size) {
         const world = mat4.create()
         mat4.multiply(world, t, rxry)
 
-        context.uniformMatrix4fv(context.getUniformLocation(program, "u_world"),
+        context.uniformMatrix4fv(attributes['u_world'],
             false,
             world)
 
-        context.uniformMatrix4fv(context.getUniformLocation(program, 'u_worldViewProjection'),
+        context.uniformMatrix4fv(attributes['u_worldViewProjection'],
             false,
             this.camera.calculateModelViewProjection(context, world))
 
-        context.uniform3fv(context.getUniformLocation(program, "u_reverseLightDirection"),
+        context.uniform3fv(attributes['u_reverseLightDirection'],
             lightDirection)
     }
 
     this.draw = (context, time) => {
         context.useProgram(program)
 
-        sendData(context, program, positionBuffer, 3, 'a_position')
-        sendData(context, program, colorBuffer, 4, 'a_color')
-        sendData(context, program, normalsBuffer, 3, 'a_normal')
+        sendData(context, positionBuffer, 3, 'a_position')
+        sendData(context, colorBuffer, 4, 'a_color')
+        sendData(context, normalsBuffer, 3, 'a_normal')
 
         context.drawArrays(context.TRIANGLES, // primitive type
             0, // offset

@@ -7,6 +7,7 @@ function TexturedCube(size, assetName) {
     let textureBuffer = null
     let normalsBuffer = null
     let program = null
+    let attributes = null
     let textureImg = null
     let xRot = Math.PI
     let yRot = Math.PI
@@ -19,10 +20,10 @@ function TexturedCube(size, assetName) {
         return buffer
     }
 
-    const sendData = (context, program, buffer, size, name) => {
+    const sendData = (context, buffer, size, name) => {
         context.bindBuffer(context.ARRAY_BUFFER, buffer)
 
-        const attribute = context.getAttribLocation(program, name)
+        const attribute = attributes[name]
         context.enableVertexAttribArray(attribute)
 
         // tell the attribute how to get data out of buffer (ARRAY_BUFFER)
@@ -39,6 +40,14 @@ function TexturedCube(size, assetName) {
         textureBuffer = createBuffer(context, cube.textureCoords)
         normalsBuffer = createBuffer(context, cube.normals)
         program = content.programs['textured-cube']
+        attributes = {
+            'u_world': context.getUniformLocation(program, 'u_world'),
+            'u_worldViewProjection': context.getUniformLocation(program, 'u_worldViewProjection'),
+            'u_reverseLightDirection': context.getUniformLocation(program, 'u_reverseLightDirection'),
+            'a_position': context.getAttribLocation(program, 'a_position'),
+            'a_texcoord': context.getAttribLocation(program, 'a_texcoord'),
+            'a_normal': context.getAttribLocation(program, 'a_normal')
+        }
         textureImg = content.resources[assetName].img
     }
 
@@ -65,24 +74,24 @@ function TexturedCube(size, assetName) {
         const world = mat4.create()
         mat4.multiply(world, t, rxry)
 
-        context.uniformMatrix4fv(context.getUniformLocation(program, "u_world"),
+        context.uniformMatrix4fv(attributes['u_world'],
             false,
             world)
 
-        context.uniformMatrix4fv(context.getUniformLocation(program, 'u_worldViewProjection'),
+        context.uniformMatrix4fv(attributes['u_worldViewProjection'],
             false,
             this.camera.calculateModelViewProjection(context, world))
 
-        context.uniform3fv(context.getUniformLocation(program, "u_reverseLightDirection"),
+        context.uniform3fv(attributes['u_reverseLightDirection'],
             lightDirection)
     }
 
     this.draw = (context, time) => {
         context.useProgram(program)
 
-        sendData(context, program, positionBuffer, 3, 'a_position')
-        sendData(context, program, textureBuffer, 2, 'a_texcoord')
-        sendData(context, program, normalsBuffer, 3, 'a_normal')
+        sendData(context, positionBuffer, 3, 'a_position')
+        sendData(context, textureBuffer, 2, 'a_texcoord')
+        sendData(context, normalsBuffer, 3, 'a_normal')
 
         // create and bind a texture.
         const texture = context.createTexture()
