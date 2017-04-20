@@ -203,3 +203,5 @@ const createProgram = (context, shaders) => {
     context.deleteProgram(program)
     throw new Error(`SHADER LINKING ERROR: "${e}"`)
 }
+
+module.exports = wgl

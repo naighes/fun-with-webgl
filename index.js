@@ -1,3 +1,9 @@
+const wgl = require('./lib')
+const Triangle = require('./triangle')
+const FixedCamera = require('./fixed-camera')
+const ColoredCube = require('./colored-cube')
+const TexturedCube = require('./textured-cube')
+
 window.onload = () => {
     wgl('view', new Game())
 }

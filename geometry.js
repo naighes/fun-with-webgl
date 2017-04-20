@@ -1,4 +1,4 @@
-function createCube(size) {
+module.exports.createCube = (size) => {
     const s = size/2
 
     const v1 = [-s, -s,  s],

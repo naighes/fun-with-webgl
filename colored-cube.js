@@ -1,5 +1,10 @@
+const glmatrix = require('gl-matrix')
+const vec3 = glmatrix.vec3
+const mat4 = glmatrix.mat4
+const geometry = require('./geometry')
+
 function ColoredCube(size) {
-    const cube = createCube(size)
+    const cube = geometry.createCube(size)
 
     const r = [1.0, 0.0, 0.0, 1.0],
           g = [0.0, 1.0, 0.0, 1.0],
@@ -116,3 +121,5 @@ function ColoredCube(size) {
             cube.vertices.length/3) // count
     }
 }
+
+module.exports = ColoredCube

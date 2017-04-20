@@ -1,3 +1,7 @@
+const glmatrix = require('gl-matrix')
+const vec3 = glmatrix.vec3
+const mat4 = glmatrix.mat4
+
 function FixedCamera() {
     let mvp = mat4.create()
 
@@ -29,3 +33,5 @@ function FixedCamera() {
     this.initialize = (context, content) => {
     }
 }
+
+module.exports = FixedCamera

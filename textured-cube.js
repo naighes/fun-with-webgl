@@ -1,5 +1,10 @@
+const glmatrix = require('gl-matrix')
+const vec3 = glmatrix.vec3
+const mat4 = glmatrix.mat4
+const geometry = require('./geometry')
+
 function TexturedCube(size, assetName) {
-    const cube = createCube(size)
+    const cube = geometry.createCube(size)
 
     const lightPosition = vec3.fromValues(20.0, 30.0, 50.0)
 
@@ -117,3 +122,5 @@ function TexturedCube(size, assetName) {
             cube.vertices.length/3) // count
     }
 }
+
+module.exports = TexturedCube

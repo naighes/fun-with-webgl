@@ -1,3 +1,7 @@
+const glmatrix = require('gl-matrix')
+const vec3 = glmatrix.vec3
+const mat4 = glmatrix.mat4
+
 function Triangle(vertices, tint) {
     let positionBuffer = null
     let colorBuffer = null
@@ -62,3 +66,5 @@ function Triangle(vertices, tint) {
             3) //count
     }
 }
+
+module.exports = Triangle
