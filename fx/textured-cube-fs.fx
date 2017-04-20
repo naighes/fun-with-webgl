@@ -4,13 +4,15 @@ precision mediump float;
 
 varying vec2 v_texcoord;
 varying vec3 v_normal;
+varying vec3 v_surfaceToLight;
 
 uniform sampler2D u_texture;
-uniform vec3 u_reverseLightDirection;
 
 void main() {
     vec3 normal = normalize(v_normal);
-    float light = dot(normal, u_reverseLightDirection);
+
+    vec3 surfaceToLightDirection = normalize(v_surfaceToLight);
+    float light = dot(v_normal, surfaceToLightDirection);
 
     // gl_FragColor is a special variable a fragment shader
     // is responsible for setting

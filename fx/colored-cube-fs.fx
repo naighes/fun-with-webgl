@@ -4,12 +4,12 @@ precision mediump float;
 
 varying lowp vec4 v_color;
 varying vec3 v_normal;
-
-uniform vec3 u_reverseLightDirection;
+varying vec3 v_surfaceToLight;
 
 void main() {
     vec3 normal = normalize(v_normal);
-    float light = dot(normal, u_reverseLightDirection);
+    vec3 surfaceToLightDirection = normalize(v_surfaceToLight);
+    float light = dot(v_normal, surfaceToLightDirection);
 
     // gl_FragColor is a special variable a fragment shader
     // is responsible for setting

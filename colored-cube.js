@@ -13,7 +13,7 @@ function ColoredCube(size) {
                              g, b, w, r, w, b,
                              g, b, w, r, w, b)
 
-    const lightDirection = vec3.normalize(vec3.create(), vec3.fromValues(0.5, 0.7, 1))
+    const lightPosition = vec3.fromValues(20.0, 30.0, 50.0)
 
     let positionBuffer = null
     let colorBuffer = null
@@ -55,7 +55,7 @@ function ColoredCube(size) {
             'u_world': context.getUniformLocation(program, 'u_world'),
             'u_worldInverseTranspose': context.getUniformLocation(program, 'u_worldInverseTranspose'),
             'u_worldViewProjection': context.getUniformLocation(program, 'u_worldViewProjection'),
-            'u_reverseLightDirection': context.getUniformLocation(program, 'u_reverseLightDirection'),
+            'u_lightWorldPosition': context.getUniformLocation(program, 'u_lightWorldPosition'),
             'a_position': context.getAttribLocation(program, 'a_position'),
             'a_color': context.getAttribLocation(program, 'a_color'),
             'a_normal': context.getAttribLocation(program, 'a_normal')
@@ -100,8 +100,8 @@ function ColoredCube(size) {
             false,
             this.camera.calculateModelViewProjection(context, world))
 
-        context.uniform3fv(attributes['u_reverseLightDirection'],
-            lightDirection)
+        context.uniform3fv(attributes['u_lightWorldPosition'],
+            lightPosition)
     }
 
     this.draw = (context, time) => {
