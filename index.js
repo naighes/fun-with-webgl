@@ -13,7 +13,12 @@ function Game() {
         },
         resources: {
             'metal-box': {
-                src: 'img/metal_box.jpg'
+                src: 'img/metal_box.jpg',
+                type: 'img'
+            },
+            'heightmap': {
+                src: 'img/heightmap.png',
+                type: 'heightmap'
             }
         }
     }
