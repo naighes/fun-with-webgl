@@ -42,6 +42,7 @@ function TexturedCube(size, assetName) {
         program = content.programs['textured-cube']
         attributes = {
             'u_world': context.getUniformLocation(program, 'u_world'),
+            'u_worldInverseTranspose': context.getUniformLocation(program, 'u_worldInverseTranspose'),
             'u_worldViewProjection': context.getUniformLocation(program, 'u_worldViewProjection'),
             'u_reverseLightDirection': context.getUniformLocation(program, 'u_reverseLightDirection'),
             'a_position': context.getAttribLocation(program, 'a_position'),
@@ -74,7 +75,14 @@ function TexturedCube(size, assetName) {
         const world = mat4.create()
         mat4.multiply(world, t, rxry)
 
+        const worldInverse = mat4.invert(mat4.create(), world)
+        const worldInverseTranspose = mat4.transpose(mat4.create(), worldInverse);
+
         context.uniformMatrix4fv(attributes['u_world'],
+            false,
+            world)
+
+        context.uniformMatrix4fv(attributes['u_worldInverseTranspose'],
             false,
             world)
 

@@ -5,6 +5,7 @@ attribute vec3 a_normal;
 
 uniform mat4 u_worldViewProjection;
 uniform mat4 u_world;
+uniform mat4 u_worldInverseTranspose;
 
 varying vec2 v_texcoord;
 varying vec3 v_normal;
@@ -16,6 +17,6 @@ void main() {
 
     gl_Position = u_worldViewProjection * a_position;
     v_texcoord = a_texcoord;
-    v_normal = mat3(u_world) * a_normal;
+    v_normal = mat3(u_worldInverseTranspose) * a_normal;
 }
 
