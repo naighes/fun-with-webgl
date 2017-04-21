@@ -1,3 +1,5 @@
+const fetching = require('./fetching')
+
 const wgl = (canvasId, game) => {
     const canvas = document.getElementById(canvasId)
     const context = getContext(canvas)
@@ -57,10 +59,10 @@ const wgl = (canvasId, game) => {
     }
 
     const loadShaders = (context, shaders) => Object.keys(shaders)
-        .map(key => Promise.all([fetchResource(context, {
+        .map(key => Promise.all([fetching.fetchResource(context, {
                 src: shaders[key].vs,
                 type: context.VERTEX_SHADER
-            }), fetchResource(context, {
+            }), fetching.fetchResource(context, {
                 src: shaders[key].fs,
                 type: context.FRAGMENT_SHADER
             })])
@@ -80,7 +82,7 @@ const wgl = (canvasId, game) => {
         }, { }))
 
     const lr = Promise.all(Object.keys(game.config.resources)
-        .map(key => fetchResource(context, game.config.resources[key])
+        .map(key => fetching.fetchResource(context, game.config.resources[key])
             .then(r => {
                 const result = { }
                 result[key] = r
@@ -117,62 +119,6 @@ const getContext = canvas => {
 
     return context
 }
-
-const fetchResource = (context, resource) => {
-    const vs = context.VERTEX_SHADER
-    const fs = context.FRAGMENT_SHADER
-    let map = {
-        'img': fetchImage,
-        'heightmap': fetchHeightMap
-    }
-    map[vs] = fetchShader
-    map[fs] = fetchShader
-
-    return map[resource.type](resource)
-}
-
-const fetchImage = resource => new Promise((resolve, reject) => {
-    resource.img = new Image()
-    resource.img.onload = () => {
-        resolve(resource)
-    }
-    resource.img.src = resource.src
-})
-
-const fetchShader = resource => {
-    const decode = response => {
-        const dataView = new DataView(response)
-        const decoder = new TextDecoder('utf-8')
-
-        return decoder.decode(dataView)
-    }
-
-    return fetch(resource, decode)
-}
-
-const fetchHeightMap = resource => {
-    const decode = response => {
-        return new Uint16Array(response)
-    }
-
-    return fetch(resource, decode)
-}
-
-const fetch = (resource, decode) => new Promise((resolve, reject) => {
-    let request = new XMLHttpRequest()
-    request.responseType = 'arraybuffer'
-    request.open('GET', resource.src, true)
-    request.onreadystatechange = () =>  {
-        if (request.readyState === 4 &&
-            (request.status === 200 || request.status == 0)) {
-            resolve({
-                content: decode(request.response),
-                type: resource.type
-            })
-        }
-    }
-    request.send(null)
-})
 
 const createShader = (context, type, source) => {
     let shader = context.createShader(type)

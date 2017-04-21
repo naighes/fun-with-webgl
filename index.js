@@ -3,6 +3,7 @@ const Triangle = require('./triangle')
 const FixedCamera = require('./fixed-camera')
 const ColoredCube = require('./colored-cube')
 const TexturedCube = require('./textured-cube')
+const Terrain = require('./terrain')
 
 window.onload = () => {
     wgl('view', new Game())
@@ -15,7 +16,8 @@ function Game() {
         shaders: {
             'colored-cube': { vs: 'fx/colored-cube-vs.fx', fs: 'fx/colored-cube-fs.fx' },
             'textured-cube': { vs: 'fx/textured-cube-vs.fx', fs: 'fx/textured-cube-fs.fx' },
-            'colored-triangle': { vs: 'fx/colored-triangle-vs.fx', fs: 'fx/colored-triangle-fs.fx' }
+            'colored-triangle': { vs: 'fx/colored-triangle-vs.fx', fs: 'fx/colored-triangle-fs.fx' },
+            'terrain': { vs: 'fx/terrain-vs.fx', fs: 'fx/terrain-fs.fx' }
         },
         resources: {
             'metal-box': {
@@ -58,6 +60,10 @@ function Game() {
         const cube2 = new TexturedCube(1.3, 'metal-box')
         cube2.camera = camera
         this.objects.push(cube2)
+
+        const terrain = new Terrain('heightmap')
+        terrain.camera = camera
+        this.objects.push(terrain)
     }
 
     this.update = (context, time) => {
