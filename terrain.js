@@ -9,7 +9,7 @@ function Terrain(heightMapName) {
     let normalsBuffer = null
     let program = null
     let attributes = null
-    let heightMap = null
+    let heightmap = null
 
     const createBuffer = (context, data) => {
         const buffer = context.createBuffer()
@@ -34,6 +34,24 @@ function Terrain(heightMapName) {
             0) // offset: start at the beginning of the buffer
     }
 
+    const buildHeightmap = png => {
+        const scaleFactor = 70.0
+        let result = []
+
+        for (let y = 0; y < png.getHeight(); y++) {
+            let row = []
+
+            for (let x = 0; x < png.getWidth(); x++) {
+                const h = png.getPixel(x, y)[0]/255*scaleFactor
+                row.push(new Float32Array([x*1.0, h, -1.0*y]))
+            }
+
+            result.push(row)
+        }
+
+        return result
+    }
+
     this.initialize = (context, content) => {
         positionBuffer = createBuffer(context, [0, 0.5,
                                                 0, 1.0,
@@ -48,7 +66,7 @@ function Terrain(heightMapName) {
             'a_position': context.getAttribLocation(program, 'a_position'),
             'a_normal': context.getAttribLocation(program, 'a_normal')
         }
-        heightMap = content.resources['heightmap']
+        heightmap = buildHeightmap(content.resources['heightmap'].content)
     }
 
     this.update = (context, time) => {

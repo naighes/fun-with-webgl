@@ -56,22 +56,6 @@ const decodeHeightmap = response => new Promise((resolve, reject) => {
             throw error // TODO: reject
         }
 
-        resolve(mapHeightmap(png))
+        resolve(png)
     })
 })
-
-const mapHeightmap = png => {
-    let result = []
-
-    for (let i = 0; i < png.getHeight(); i++) {
-        let row = []
-
-        for (let j = 0; j < png.getWidth(); j++) {
-            row.push(png.getPixel(j, i))
-        }
-
-        result.push(row)
-    }
-
-    return result
-}
