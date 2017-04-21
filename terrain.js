@@ -3,18 +3,17 @@ const vec3 = glmatrix.vec3
 const mat4 = glmatrix.mat4
 
 function Terrain(heightMapName) {
-    const lightPosition = vec3.fromValues(20.0, 30.0, 50.0)
-
     let positionBuffer = null
-    let normalsBuffer = null
+    let indexBuffer = null
+    let colorBuffer = null
     let program = null
     let attributes = null
-    let heightmap = null
+    let indices = null
 
-    const createBuffer = (context, data) => {
+    const createBuffer = (context, data, target) => {
         const buffer = context.createBuffer()
-        context.bindBuffer(context.ARRAY_BUFFER, buffer)
-        context.bufferData(context.ARRAY_BUFFER, new Float32Array(data), context.STATIC_DRAW)
+        context.bindBuffer(target, buffer)
+        context.bufferData(target, data, context.STATIC_DRAW)
 
         return buffer
     }
@@ -34,39 +33,104 @@ function Terrain(heightMapName) {
             0) // offset: start at the beginning of the buffer
     }
 
-    const buildHeightmap = png => {
-        const scaleFactor = 70.0
-        let result = []
+    const getColors = png => {
+        let result = new Float32Array(png.getWidth()*png.getHeight()*4)
 
-        for (let y = 0; y < png.getHeight(); y++) {
-            let row = []
+        for (let x = 0; x < png.getWidth(); x++) {
+            for (let y = 0; y < png.getHeight(); y++) {
+                const i = x*4+y*png.getWidth()*4
+                const h = png.getPixel(x, y)[0]
 
-            for (let x = 0; x < png.getWidth(); x++) {
-                const h = png.getPixel(x, y)[0]/255*scaleFactor
-                row.push(new Float32Array([x*1.0, h, -1.0*y]))
+                if (h < 50) {
+                    result[i+0] = 0.0
+                    result[i+1] = 0.0
+                    result[i+2] = 1.0
+                    result[i+3] = 1.0
+                } else if (h >= 50 && h < 120) {
+                    result[i+0] = 0.0
+                    result[i+1] = 1.0
+                    result[i+2] = 0.0
+                    result[i+3] = 1.0
+                } else if (h >= 120 && h < 210) {
+                    result[i+0] = 1.0
+                    result[i+1] = 0.0
+                    result[i+2] = 0.0
+                    result[i+3] = 1.0
+                } else {
+                    result[i+0] = 1.0
+                    result[i+1] = 1.0
+                    result[i+2] = 1.0
+                    result[i+3] = 1.0
+                }
             }
+        }
 
-            result.push(row)
+        return result
+    }
+
+    const getVertices = png => {
+        const scaleFactor = 0.05
+        let result = new Float32Array(png.getWidth()*png.getHeight()*3)
+
+        for (let x = 0; x < png.getWidth(); x++) {
+            for (let y = 0; y < png.getHeight(); y++) {
+                const w = x*scaleFactor
+                const h = png.getPixel(x, y)[0]*scaleFactor
+                const d = -1.0*y*scaleFactor
+                const i = x*3+y*png.getWidth()*3
+                result[i+0] = w
+                result[i+1] = h
+                result[i+2] = d
+            }
+        }
+
+        return result
+    }
+
+    const getIndices = png => {
+        let result = new Uint16Array((png.getWidth()-1)*(png.getHeight()-1)*6)
+        let counter = 0
+
+        for (let y = 0; y < png.getHeight()-1; y++) {
+            for (let x = 0; x < png.getWidth()-1; x++) {
+                const lowerLeft = x+y*png.getWidth()
+                const lowerRight = (x+1)+y*png.getWidth()
+                const topLeft = x+(y+1)*png.getWidth()
+                const topRight = (x+1)+(y+1)*png.getWidth()
+
+                result[counter++] = topLeft
+                result[counter++] = lowerRight
+                result[counter++] = lowerLeft
+
+                result[counter++] = topLeft
+                result[counter++] = topRight
+                result[counter++] = lowerRight
+            }
         }
 
         return result
     }
 
     this.initialize = (context, content) => {
-        positionBuffer = createBuffer(context, [0, 0.5,
-                                                0, 1.0,
-                                                0.7, 0.5])
-        normalsBuffer = createBuffer(context, [0.0, 0.0, 1.0,0.0, 0.0, 1.0,0.0, 0.0, 1.0])
+        const heightmap = content.resources['heightmap'].content
+        indices = getIndices(heightmap)
+        positionBuffer = createBuffer(context,
+            getVertices(heightmap),
+            context.ARRAY_BUFFER)
+        indexBuffer = createBuffer(context,
+            indices,
+            context.ELEMENT_ARRAY_BUFFER)
+        colorBuffer = createBuffer(context,
+            getColors(heightmap),
+            context.ARRAY_BUFFER)
         program = content.programs['terrain']
         attributes = {
             'u_world': context.getUniformLocation(program, 'u_world'),
             'u_worldInverseTranspose': context.getUniformLocation(program, 'u_worldInverseTranspose'),
             'u_worldViewProjection': context.getUniformLocation(program, 'u_worldViewProjection'),
-            'u_lightWorldPosition': context.getUniformLocation(program, 'u_lightWorldPosition'),
             'a_position': context.getAttribLocation(program, 'a_position'),
-            'a_normal': context.getAttribLocation(program, 'a_normal')
+            'a_color': context.getAttribLocation(program, 'a_color'),
         }
-        heightmap = buildHeightmap(content.resources['heightmap'].content)
     }
 
     this.update = (context, time) => {
@@ -74,7 +138,7 @@ function Terrain(heightMapName) {
 
         const world = mat4.create()
         const worldInverse = mat4.invert(mat4.create(), world)
-        const worldInverseTranspose = mat4.transpose(mat4.create(), worldInverse);
+        const worldInverseTranspose = mat4.transpose(mat4.create(), worldInverse)
 
         context.uniformMatrix4fv(attributes['u_world'],
             false,
@@ -87,20 +151,18 @@ function Terrain(heightMapName) {
         context.uniformMatrix4fv(attributes['u_worldViewProjection'],
             false,
             this.camera.calculateModelViewProjection(context, world))
-
-        context.uniform3fv(attributes['u_lightWorldPosition'],
-            lightPosition)
     }
 
     this.draw = (context, time) => {
         context.useProgram(program)
 
-        sendData(context, positionBuffer, 2, 'a_position')
-        sendData(context, normalsBuffer, 3, 'a_normal')
-
-        context.drawArrays(context.TRIANGLES, // primitive type
-            0, // offset
-            3) // count
+        sendData(context, positionBuffer, 3, 'a_position')
+        sendData(context, colorBuffer, 4, 'a_color')
+        context.bindBuffer(context.ELEMENT_ARRAY_BUFFER, indexBuffer)
+        context.drawElements(context.TRIANGLES,
+            indices.length,
+            context.UNSIGNED_SHORT,
+            0)
     }
 }
 

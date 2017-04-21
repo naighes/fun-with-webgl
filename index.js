@@ -1,6 +1,8 @@
 const wgl = require('./lib')
+const glmatrix = require('gl-matrix')
+const vec3 = glmatrix.vec3
 const Triangle = require('./triangle')
-const FixedCamera = require('./fixed-camera')
+const Camera = require('./camera')
 const ColoredCube = require('./colored-cube')
 const TexturedCube = require('./textured-cube')
 const Terrain = require('./terrain')
@@ -35,11 +37,12 @@ function Game() {
                  0.0, 1.0, 0.0, 1.0,
                  0.0, 0.0, 1.0, 1.0]
 
-    const camera = new FixedCamera()
+    const camera = new Camera(vec3.fromValues(0.0, -15.0, 10.0),
+        vec3.fromValues(0.0, 0.0, 0.0))
 
     this.initialize = context => {
-        const triangles = [[0, 0.5,
-                            0, 1.0,
+        const triangles = [[0.0, 0.5,
+                            0.0, 1.0,
                             0.7, 0.5],
                            [-0.5, -0.5,
                             -0.9, -0.5,
@@ -77,7 +80,7 @@ function Game() {
         context.depthFunc(context.LEQUAL)
         // clear the color as well as the depth buffer
         context.clear(context.COLOR_BUFFER_BIT | context.DEPTH_BUFFER_BIT)
-        context.viewport(0, 0, context.canvas.width, context.canvas.height)
+        context.viewport(0, 0, context.drawingBufferWidth, context.drawingBufferHeight)
     }
 }
 
