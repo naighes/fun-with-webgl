@@ -27,8 +27,8 @@ module.exports.createCube = (size) => {
                 v3, v7, v4,
                 v8, v4, v7,
     // bottom
-                v5, v1, v6,
-                v2, v6, v1)
+                v6, v1, v5,
+                v1, v6, v2)
 
     const xp = [1.0, 0.0, 0.0],
           xn = [-1.0, 0.0, 0.0],

@@ -16,7 +16,7 @@ function ColoredCube(size) {
                              g, r, w, b, w, r,
                              w, b, r, g, r, b,
                              g, b, w, r, w, b,
-                             g, b, w, r, w, b)
+                             w, b, g, b, w, r)
 
     const lightPosition = vec3.fromValues(20.0, 30.0, 50.0)
 
