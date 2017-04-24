@@ -37,10 +37,12 @@ function Game() {
                  0.0, 1.0, 0.0, 1.0,
                  0.0, 0.0, 1.0, 1.0]
 
-    const camera = new Camera(vec3.fromValues(0.0, -15.0, 10.0),
+    const camera = new Camera(vec3.fromValues(0.0, 0.0, 3.0),
         vec3.fromValues(0.0, 0.0, 0.0))
 
     this.initialize = context => {
+        context.enable(context.CULL_FACE)
+
         const triangles = [[0.0, 0.5,
                             0.0, 1.0,
                             0.7, 0.5],
