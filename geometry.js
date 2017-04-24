@@ -34,8 +34,8 @@ module.exports.createCube = (size) => {
           xn = [-1.0, 0.0, 0.0],
           yp = [0.0, 1.0, 0.0],
           yn = [0.0, -1.0, 0.0],
-          zp = [0.0, 0.0, -1.0],
-          zn = [0.0, 0.0, 1.0]
+          zp = [0.0, 0.0, 1.0],
+          zn = [0.0, 0.0, -1.0]
 
     const normals = []
         .concat(zp, zp, zp,
