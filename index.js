@@ -29,6 +29,10 @@ function Game() {
             'heightmap': {
                 src: 'img/heightmap.png',
                 type: 'heightmap'
+            },
+            'heightmap_small': {
+                src: 'img/heightmap_small.png',
+                type: 'heightmap'
             }
         }
     }
@@ -66,7 +70,7 @@ function Game() {
         cube2.camera = camera
         this.objects.push(cube2)
 
-        const terrain = new Terrain('heightmap')
+        const terrain = new Terrain('heightmap_small')
         terrain.camera = camera
         this.objects.push(terrain)
     }
