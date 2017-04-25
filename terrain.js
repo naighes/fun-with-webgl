@@ -182,51 +182,12 @@ function Terrain(heightMapName) {
             'a_color': context.getAttribLocation(program, 'a_color'),
             'a_normal': context.getAttribLocation(program, 'a_normal')
         }
-
-        document.onkeydown = e => {
-            if (e.keyCode === 37) {
-                // move left
-                move.left = (w, t) => mat4.translate(w, w, vec3.fromValues(-1.0*t, 0.0, 0.0))
-            } if (e.keyCode === 38) {
-                // move forward
-                move.forward = (w, t) => mat4.translate(w, w, vec3.fromValues(0.0, 0.0, -1.0*t))
-            } if (e.keyCode === 39) {
-                // move right
-                move.right = (w, t) => mat4.translate(w, w, vec3.fromValues(1.0*t, 0.0, 0.0))
-            } if (e.keyCode === 40) {
-                // move backward
-                move.backward = (w, t) => mat4.translate(w, w, vec3.fromValues(0.0, 0.0, 1.0*t))
-            }
-        }
-
-        document.onkeyup = e => {
-            if (e.keyCode === 37) {
-                move.left = (w, t) => w
-            } if (e.keyCode === 38) {
-                move.forward = (w, t) => w
-            } if (e.keyCode === 39) {
-                move.right = (w, t) => w
-            } if (e.keyCode === 40) {
-                move.backward = (w, t) => w
-            }
-        }
-    }
-
-    let move = {
-        forward: (w, t) => w,
-        backward: (w, t) => w,
-        left: (w, t) => w,
-        right: (w, t) => w
     }
 
     let world = mat4.create()
 
     this.update = (context, time) => {
         context.useProgram(program)
-
-        Object.keys(move).forEach(m => {
-            world = move[m](world, 0.15)
-        })
 
         const worldInverse = mat4.invert(mat4.create(), world)
         const worldInverseTranspose = mat4.transpose(mat4.create(), worldInverse)

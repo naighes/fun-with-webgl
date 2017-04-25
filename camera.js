@@ -3,13 +3,17 @@ const vec3 = glmatrix.vec3
 const mat4 = glmatrix.mat4
 const quat = glmatrix.quat
 
-function Camera(initialPosition, direction) {
+function Camera(initialPosition, dir) {
     let mvp = mat4.create()
     let driving = false
     let cx = 0
     let cy = 0
-    let xRot = 0.0
-    let yRot = 0.0
+    let xRot = (t, s) => 0.0
+    let yRot = (t, s) => 0.0
+    let xMove = t => 0.0
+    let zMove = t => 0.0
+    const moveSpeed = 4.0
+    const rotationSpeed = 20.0
 
     const initialDirection = dir
 
@@ -56,8 +60,8 @@ function Camera(initialPosition, direction) {
     const mouseup = e => {
         driving = false
 
-        xRot = 0.0
-        yRot = 0.0
+        xRot = (t, s) => 0.0
+        yRot = (t, s) => 0.0
     }
 
     const quaternion = quat.create()
@@ -71,15 +75,42 @@ function Camera(initialPosition, direction) {
 
         const x = e.clientX
         const y = e.clientY
-
         const dx = x-cx
         const dy = y-cy
 
-        xRot = degToRad(dy/10.0)
-        yRot = degToRad(dx/10.0)
+        xRot = (t, s) => degToRad(dy*t*s)
+        yRot = (t, s) => degToRad(dx*t*s)
 
         cx = x
         cy = y
+    }
+
+    const keydown = e => {
+        if (e.keyCode === 37) {
+            // move left
+            xMove = (t, s) => -1.0*t*s
+        } if (e.keyCode === 38) {
+            // move forward
+            zMove = (t, s) => -1.0*t*s
+        } if (e.keyCode === 39) {
+            // move right
+            xMove = (t, s) => 1.0*t*s
+        } if (e.keyCode === 40) {
+            // move backward
+            zMove = (t, s) => 1.0*t*s
+        }
+    }
+
+    const keyup = e => {
+        if (e.keyCode === 37) {
+            xMove = t => 0.0
+        } if (e.keyCode === 38) {
+            zMove = t => 0.0
+        } if (e.keyCode === 39) {
+            xMove = t => 0.0
+        } if (e.keyCode === 40) {
+            zMove = t => 0.0
+        }
     }
 
     this.initialize = (context, content) => {
@@ -88,31 +119,45 @@ function Camera(initialPosition, direction) {
         context.canvas.onmousedown = mousedown
         document.onmouseup = mouseup
         document.onmousemove = mousemove
+        document.onkeydown = keydown
+        document.onkeyup = keyup
     }
 
     this.update = (context, time) => {
-        const rx = quat.create()
+        updateRotation(time, rotationSpeed)
+        updatePosition(time, moveSpeed)
+    }
 
-        if (xRot !== 0.0) {
-            quat.setAxisAngle(rx, vec3.fromValues(1.0, 0.0, 0.0), xRot)
+    const updatePosition = (time, speed) => {
+        if (xMove === 0.0 && zMove === 0.0) {
+            return
         }
 
-        const ry = quat.create()
+        let addVector = vec3.fromValues(xMove(time.delta, speed), 0.0, zMove(time.delta, speed))
+        vec3.transformQuat(addVector, addVector, rotation)
+        vec3.add(position, position, addVector)
+    }
 
-        if (yRot !== 0.0) {
-            quat.setAxisAngle(ry, vec3.fromValues(0.0, 1.0, 0.0), yRot)
+    const updateRotation = (time, speed) => {
+        const yaw = yRot(time.delta, speed)
+        const pitch = xRot(time.delta, speed)
+
+        if (yaw === 0.0 && pitch === 0.0) {
+            return
         }
+
+        const rx = quat.create(), ry = quat.create()
+        quat.setAxisAngle(rx, vec3.fromValues(1.0, 0.0, 0.0), pitch)
+        quat.setAxisAngle(ry, vec3.fromValues(0.0, 1.0, 0.0), yaw)
 
         const r = quat.create()
         quat.multiply(r, rx, ry)
 
-        if (xRot !== 0.0 || yRot !== 0.0) {
-            quat.multiply(rotation, rotation, r)
-            direction = vec3.create()
-            vec3.copy(direction, initialDirection)
-            vec3.transformQuat(direction, direction, rotation)
-            vec3.normalize(direction, direction)
-        }
+        quat.multiply(rotation, rotation, r)
+        direction = vec3.create()
+        vec3.copy(direction, initialDirection)
+        vec3.transformQuat(direction, direction, rotation)
+        vec3.normalize(direction, direction)
     }
 }
 
