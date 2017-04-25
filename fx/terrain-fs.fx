@@ -2,10 +2,13 @@
 // to pick one. mediump is a good default
 precision mediump float;
 
-varying lowp vec4 v_color;
+varying vec2 v_texcoord;
 varying vec3 v_normal;
 
 uniform vec3 u_reverseLightDirection;
+uniform vec3 u_ambientLight;
+
+uniform sampler2D u_texture;
 
 void main() {
     // because v_normal is a varying it's interpolated
@@ -16,10 +19,10 @@ void main() {
 
     // gl_FragColor is a special variable a fragment shader
     // is responsible for setting
-    gl_FragColor = v_color;
+    gl_FragColor = texture2D(u_texture, v_texcoord);
 
     // Lets multiply just the color portion (not the alpha)
     // by the light
-    gl_FragColor.rgb *= light;
+    gl_FragColor.rgb *= (light+u_ambientLight);
 }
 

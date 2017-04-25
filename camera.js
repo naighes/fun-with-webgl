@@ -12,7 +12,7 @@ function Camera(initialPosition, dir) {
     let yRot = (t, s) => 0.0
     let xMove = t => 0.0
     let zMove = t => 0.0
-    const moveSpeed = 4.0
+    const moveSpeed = 8.0
     const rotationSpeed = 20.0
 
     const initialDirection = dir

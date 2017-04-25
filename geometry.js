@@ -155,13 +155,31 @@ module.exports.createTerrain = (png, heightFactor, sizeFactor) => {
         return result
     }
 
+    const getTextureCoords = (png, heightFactor, sizeFactor) => {
+        let result = new Float32Array(png.getWidth()*png.getHeight()*2)
+
+        for (let x = 0; x < png.getWidth(); x++) {
+            for (let y = 0; y < png.getHeight(); y++) {
+                const i = x*2+y*png.getWidth()*2
+                const u = x/20.0
+                const v = y/20.0
+                result[i+0] = u
+                result[i+1] = v
+            }
+        }
+
+        return result
+    }
+
     const vertices = getVertices(png, heightFactor, sizeFactor)
     const indices = getIndices(png)
     const normals = getNormals(vertices, indices)
+    const textureCoords = getTextureCoords(png, heightFactor, sizeFactor)
 
     return {
         vertices: vertices,
         indices: indices,
-        normals: normals
+        normals: normals,
+        textureCoords: textureCoords
     }
 }
