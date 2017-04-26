@@ -5,7 +5,6 @@ const geometry = require('./geometry')
 
 function TexturedCube(size, assetName) {
     const cube = geometry.createCube(size)
-
     const lightPosition = vec3.fromValues(20.0, 30.0, 50.0)
 
     let positionBuffer = null
@@ -13,14 +12,14 @@ function TexturedCube(size, assetName) {
     let normalsBuffer = null
     let program = null
     let attributes = null
-    let textureImg = null
     let xRot = Math.PI
     let yRot = Math.PI
+    let texture = null
 
     const createBuffer = (context, data) => {
         const buffer = context.createBuffer()
         context.bindBuffer(context.ARRAY_BUFFER, buffer)
-        context.bufferData(context.ARRAY_BUFFER, new Float32Array(data), context.STATIC_DRAW)
+        context.bufferData(context.ARRAY_BUFFER, data, context.STATIC_DRAW)
 
         return buffer
     }
@@ -41,9 +40,9 @@ function TexturedCube(size, assetName) {
     }
 
     this.initialize = (context, content) => {
-        positionBuffer = createBuffer(context, cube.vertices)
-        textureBuffer = createBuffer(context, cube.textureCoords)
-        normalsBuffer = createBuffer(context, cube.normals)
+        positionBuffer = createBuffer(context, new Float32Array(cube.vertices))
+        textureBuffer = createBuffer(context, new Float32Array(cube.textureCoords))
+        normalsBuffer = createBuffer(context, new Float32Array(cube.normals))
         program = content.programs['textured-cube']
         attributes = {
             'u_world': context.getUniformLocation(program, 'u_world'),
@@ -54,7 +53,22 @@ function TexturedCube(size, assetName) {
             'a_texcoord': context.getAttribLocation(program, 'a_texcoord'),
             'a_normal': context.getAttribLocation(program, 'a_normal')
         }
-        textureImg = content.resources[assetName].content
+
+        texture = createAndBindTexture(context, content, assetName)
+    }
+
+    const createAndBindTexture = (context, content, assetName) => {
+        texture = context.createTexture()
+        context.bindTexture(context.TEXTURE_2D, texture)
+        context.texImage2D(context.TEXTURE_2D,
+            0,
+            context.RGBA,
+            context.RGBA,
+            context.UNSIGNED_BYTE,
+            content.resources[assetName].content)
+        context.generateMipmap(context.TEXTURE_2D)
+
+        return texture
     }
 
     this.update = (context, time) => {
@@ -105,17 +119,7 @@ function TexturedCube(size, assetName) {
         sendData(context, positionBuffer, 3, 'a_position')
         sendData(context, textureBuffer, 2, 'a_texcoord')
         sendData(context, normalsBuffer, 3, 'a_normal')
-
-        // create and bind a texture.
-        const texture = context.createTexture()
         context.bindTexture(context.TEXTURE_2D, texture)
-        context.texImage2D(context.TEXTURE_2D,
-            0,
-            context.RGBA,
-            context.RGBA,
-            context.UNSIGNED_BYTE,
-            textureImg)
-        context.generateMipmap(context.TEXTURE_2D)
 
         context.drawArrays(context.TRIANGLES, // primitive type
             0, // offset
