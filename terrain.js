@@ -14,7 +14,7 @@ function Terrain(heightMapName, textureAssetName) {
     let texture = null
 
     const lightDirection = vec3.normalize(vec3.create(), vec3.fromValues(0.5, 0.7, -1.0))
-    const ambientLight = vec3.fromValues(0.2, 0.2, 0.2)
+    const ambientLight = vec3.fromValues(0.8, 0.8, 0.8)
 
     const createBuffer = (context, data, target) => {
         const buffer = context.createBuffer()
@@ -41,7 +41,7 @@ function Terrain(heightMapName, textureAssetName) {
 
     this.initialize = (context, content) => {
         const heightmap = content.resources[heightMapName].content
-        terrain = geometry.createTerrain(heightmap, 0.1, 0.5)
+        terrain = geometry.createTerrain(heightmap, 0.1, 1.0)
         positionBuffer = createBuffer(context,
             terrain.vertices,
             context.ARRAY_BUFFER)

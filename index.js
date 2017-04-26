@@ -36,32 +36,28 @@ function Game() {
                 src: 'img/heightmap.png',
                 type: 'heightmap'
             },
-            'heightmap_small': {
-                src: 'img/heightmap_small.png',
-                type: 'heightmap'
-            },
-            'skybox_1_xn': {
-                src: 'img/skybox_1_xn.png',
+            'skybox_xn': {
+                src: 'img/skybox_2_xn.png',
                 type: 'img'
             },
-            'skybox_1_xp': {
-                src: 'img/skybox_1_xp.png',
+            'skybox_xp': {
+                src: 'img/skybox_2_xp.png',
                 type: 'img'
             },
-            'skybox_1_zn': {
-                src: 'img/skybox_1_zn.png',
+            'skybox_zn': {
+                src: 'img/skybox_2_zn.png',
                 type: 'img'
             },
-            'skybox_1_zp': {
-                src: 'img/skybox_1_zp.png',
+            'skybox_zp': {
+                src: 'img/skybox_2_zp.png',
                 type: 'img'
             },
-            'skybox_1_yn': {
-                src: 'img/skybox_1_yn.png',
+            'skybox_yn': {
+                src: 'img/skybox_2_yn.png',
                 type: 'img'
             },
-            'skybox_1_yp': {
-                src: 'img/skybox_1_yp.png',
+            'skybox_yp': {
+                src: 'img/skybox_2_yp.png',
                 type: 'img'
             }
         }
@@ -105,7 +101,7 @@ function Game() {
         cube2.camera = camera
         this.objects.push(cube2)
 
-        const terrain = new Terrain('heightmap_small', 'mountain')
+        const terrain = new Terrain('heightmap', 'mountain')
         terrain.camera = camera
         this.objects.push(terrain)
     }

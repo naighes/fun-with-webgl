@@ -49,12 +49,12 @@ function Skybox(size) {
 
     const createAndBindTexture = (context, content) => {
         let targets = { }
-        targets[context.TEXTURE_CUBE_MAP_POSITIVE_X] = content.resources['skybox_1_xp'].content
-        targets[context.TEXTURE_CUBE_MAP_NEGATIVE_X] = content.resources['skybox_1_xn'].content
-        targets[context.TEXTURE_CUBE_MAP_POSITIVE_Y] = content.resources['skybox_1_yp'].content
-        targets[context.TEXTURE_CUBE_MAP_NEGATIVE_Y] = content.resources['skybox_1_yn'].content
-        targets[context.TEXTURE_CUBE_MAP_POSITIVE_Z] = content.resources['skybox_1_zp'].content
-        targets[context.TEXTURE_CUBE_MAP_NEGATIVE_Z] = content.resources['skybox_1_zn'].content
+        targets[context.TEXTURE_CUBE_MAP_POSITIVE_X] = content.resources['skybox_xp'].content
+        targets[context.TEXTURE_CUBE_MAP_NEGATIVE_X] = content.resources['skybox_xn'].content
+        targets[context.TEXTURE_CUBE_MAP_POSITIVE_Y] = content.resources['skybox_yp'].content
+        targets[context.TEXTURE_CUBE_MAP_NEGATIVE_Y] = content.resources['skybox_yn'].content
+        targets[context.TEXTURE_CUBE_MAP_POSITIVE_Z] = content.resources['skybox_zp'].content
+        targets[context.TEXTURE_CUBE_MAP_NEGATIVE_Z] = content.resources['skybox_zn'].content
 
         texture = context.createTexture()
         context.bindTexture(context.TEXTURE_CUBE_MAP, texture)
