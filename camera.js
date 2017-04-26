@@ -21,10 +21,10 @@ function Camera(initialPosition, dir) {
     let direction = vec3.create()
     let rotation = quat.create()
 
-    const projection = context => {
+    this.calculateProjection = context => {
         const result = mat4.create()
         const aspect = context.canvas.clientWidth/context.canvas.clientHeight
-        mat4.perspective(result, Math.PI/4, aspect, 1, 200)
+        mat4.perspective(result, Math.PI/4, aspect, 0.1, 200.0)
 
         return result
     }
@@ -41,14 +41,20 @@ function Camera(initialPosition, dir) {
         return result
     }
 
+    this.getPosition = () => position
+
     this.calculateModelViewProjection = (context, world) => {
-        const projectionView = mat4.create()
-        mat4.multiply(projectionView, projection(context), lookAt())
+        const result = mat4.create()
+        mat4.multiply(result, this.calculateProjection(context), this.calculateModelView(world))
 
-        const modelViewProjection = mat4.create()
-        mat4.multiply(modelViewProjection, projectionView, world)
+        return result
+    }
 
-        return modelViewProjection
+    this.calculateModelView = world => {
+        const result = mat4.create()
+        mat4.multiply(result, lookAt(), world)
+
+        return result
     }
 
     const mousedown = e => {
