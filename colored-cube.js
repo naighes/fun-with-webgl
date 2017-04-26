@@ -31,7 +31,7 @@ function ColoredCube(size) {
     const createBuffer = (context, data) => {
         const buffer = context.createBuffer()
         context.bindBuffer(context.ARRAY_BUFFER, buffer)
-        context.bufferData(context.ARRAY_BUFFER, new Float32Array(data), context.STATIC_DRAW)
+        context.bufferData(context.ARRAY_BUFFER, data, context.STATIC_DRAW)
 
         return buffer
     }
@@ -52,9 +52,9 @@ function ColoredCube(size) {
     }
 
     this.initialize = (context, content) => {
-        positionBuffer = createBuffer(context, cube.vertices)
-        colorBuffer = createBuffer(context, colors)
-        normalsBuffer = createBuffer(context, cube.normals)
+        positionBuffer = createBuffer(context, new Float32Array(cube.vertices))
+        colorBuffer = createBuffer(context, new Float32Array(colors))
+        normalsBuffer = createBuffer(context, new Float32Array(cube.normals))
         program = content.programs['colored-cube']
         attributes = {
             'u_world': context.getUniformLocation(program, 'u_world'),
