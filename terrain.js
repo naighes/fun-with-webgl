@@ -11,7 +11,7 @@ function Terrain(heightMapName, textureAssetName) {
     let program = null
     let attributes = null
     let terrain = null
-    let textureImg = null
+    let texture = null
 
     const lightDirection = vec3.normalize(vec3.create(), vec3.fromValues(0.5, 0.7, -1.0))
     const ambientLight = vec3.fromValues(0.2, 0.2, 0.2)
@@ -65,7 +65,22 @@ function Terrain(heightMapName, textureAssetName) {
             'a_texcoord': context.getAttribLocation(program, 'a_texcoord'),
             'a_normal': context.getAttribLocation(program, 'a_normal')
         }
-        textureImg = content.resources[textureAssetName].content
+
+        texture = createAndBindTexture(context, content, textureAssetName)
+    }
+
+    const createAndBindTexture = (context, content, assetName) => {
+        texture = context.createTexture()
+        context.bindTexture(context.TEXTURE_2D, texture)
+        context.texImage2D(context.TEXTURE_2D,
+            0,
+            context.RGBA,
+            context.RGBA,
+            context.UNSIGNED_BYTE,
+            content.resources[textureAssetName].content)
+        context.generateMipmap(context.TEXTURE_2D)
+
+        return texture
     }
 
     let world = mat4.create()
@@ -101,17 +116,7 @@ function Terrain(heightMapName, textureAssetName) {
         sendData(context, positionBuffer, 3, 'a_position')
         sendData(context, textureBuffer, 2, 'a_texcoord')
         sendData(context, normalsBuffer, 3, 'a_normal')
-
-        // create and bind a texture.
-        const texture = context.createTexture()
         context.bindTexture(context.TEXTURE_2D, texture)
-        context.texImage2D(context.TEXTURE_2D,
-            0,
-            context.RGBA,
-            context.RGBA,
-            context.UNSIGNED_BYTE,
-            textureImg)
-        context.generateMipmap(context.TEXTURE_2D)
 
         context.bindBuffer(context.ELEMENT_ARRAY_BUFFER, indexBuffer)
         context.drawElements(context.TRIANGLES,
