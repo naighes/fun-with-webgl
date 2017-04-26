@@ -1,7 +1,26 @@
 const glmatrix = require('gl-matrix')
 const vec3 = glmatrix.vec3
 
-module.exports.createCube = size => {
+const xp = [1.0, 0.0, 0.0],
+      xn = [-1.0, 0.0, 0.0],
+      yp = [0.0, 1.0, 0.0],
+      yn = [0.0, -1.0, 0.0],
+      zp = [0.0, 0.0, 1.0],
+      zn = [0.0, 0.0, -1.0]
+
+const oo = [0.0, 0.0],
+      io = [1.0, 0.0],
+      ii = [1.0, 1.0],
+      oi = [0.0, 1.0]
+
+const textureCoords = [].concat(io, ii, oo, oi, oo, ii,
+                                io, ii, oo, oi, oo, ii,
+                                io, ii, oo, oi, oo, ii,
+                                io, ii, oo, oi, oo, ii,
+                                io, ii, oo, oi, oo, ii,
+                                io, ii, oo, oi, oo, ii)
+
+function cubeBuilder(size) {
     const s = size/2
 
     const v1 = [-s, -s,  s],
@@ -13,33 +32,45 @@ module.exports.createCube = size => {
           v7 = [ s,  s, -s],
           v8 = [-s,  s, -s]
 
-    const vertices = []
-    // front
-        .concat(v2, v3, v1,
+    this.getVertices = () => {
+        return []
+        // front
+            .concat(v2, v3, v1,
                 v4, v1, v3,
-    // left
+                // left
                 v1, v4, v5,
                 v8, v5, v4,
-    // back
+                // back
                 v5, v8, v6,
                 v7, v6, v8,
-    // right
+                // right
                 v6, v7, v2,
                 v3, v2, v7,
-    // top
+                // top
                 v3, v7, v4,
                 v8, v4, v7,
-    // bottom
+                // bottom
                 v6, v1, v5,
                 v1, v6, v2)
+    }
 
-    const xp = [1.0, 0.0, 0.0],
-          xn = [-1.0, 0.0, 0.0],
-          yp = [0.0, 1.0, 0.0],
-          yn = [0.0, -1.0, 0.0],
-          zp = [0.0, 0.0, 1.0],
-          zn = [0.0, 0.0, -1.0]
+    this.getInvertedVertices = () => {
+        let result = this.getVertices()
 
+        for (let i = 0; i < result/3; i++) {
+            const i1 = i*3+0
+            const i2 = i*3+2
+            const a = result[i1]
+            const b = result[i2]
+            result[i1] = b
+            result[i2] = a
+        }
+
+        return result
+    }
+}
+
+module.exports.createCube = size => {
     const normals = []
         .concat(zp, zp, zp,
                 zp, zp, zp,
@@ -54,20 +85,34 @@ module.exports.createCube = size => {
                 yn, yn, yn,
                 yn, yn, yn)
 
-    const oo = [0.0, 0.0],
-          io = [1.0, 0.0],
-          ii = [1.0, 1.0],
-          oi = [0.0, 1.0]
-
-    const textureCoords = [].concat(io, ii, oo, oi, oo, ii,
-                                    io, ii, oo, oi, oo, ii,
-                                    io, ii, oo, oi, oo, ii,
-                                    io, ii, oo, oi, oo, ii,
-                                    io, ii, oo, oi, oo, ii,
-                                    io, ii, oo, oi, oo, ii)
+    const builder = new cubeBuilder(size)
 
     return {
-        vertices: vertices,
+        vertices: builder.getVertices(),
+        normals: normals,
+        textureCoords: textureCoords
+    }
+}
+
+module.exports.createSkybox = size => {
+    const normals = []
+        .concat(zn, zn, zn,
+                zn, zn, zn,
+                xp, xp, xp,
+                xp, xp, xp,
+                zp, zp, zp,
+                zp, zp, zp,
+                xn, xn, xn,
+                xn, xn, xn,
+                yn, yn, yn,
+                yn, yn, yn,
+                yp, yp, yp,
+                yp, yp, yp)
+
+    const builder = new cubeBuilder(size)
+
+    return {
+        vertices: builder.getInvertedVertices(),
         normals: normals,
         textureCoords: textureCoords
     }
