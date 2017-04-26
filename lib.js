@@ -1,42 +1,42 @@
 const fetching = require('./fetching')
 
+const loopBody = (game, objects, f) => (context, time) => {
+    const a = f(game)
+
+    if (typeof a === 'function') {
+        a(context, time)
+    }
+
+    objects.forEach(obj => {
+        const b = f(obj)
+
+        if (typeof b === 'function') {
+            b(context, time)
+        }
+    })
+}
+
+const loop = (game, context, objects, time) => {
+    loopBody(game, objects, o => o.update)(context, time)
+    loopBody(game, objects, o => o.draw)(context, time)
+    const previous = time.totalGameTime
+    window.requestAnimationFrame(timestamp => {
+        const current = timestamp / 1000
+        const delta = current - previous
+        loop(game, context, objects, {
+            totalGameTime: current,
+            delta: delta,
+            fps: 1 / delta
+        })
+    })
+}
+
 const wgl = (canvasId, game) => {
     const canvas = document.getElementById(canvasId)
     const context = getContext(canvas)
 
     if (!context) {
         return null
-    }
-
-    const loopBody = (game, objects, f) => (context, time) => {
-        const a = f(game)
-
-        if (typeof a === 'function') {
-            a(context, time)
-        }
-
-        objects.forEach(obj => {
-            const b = f(obj)
-
-            if (typeof b === 'function') {
-                b(context, time)
-            }
-        })
-    }
-
-    const loop = (context, objects, time) => {
-        loopBody(game, objects, o => o.update)(context, time)
-        loopBody(game, objects, o => o.draw)(context, time)
-        const previous = time.totalGameTime
-        window.requestAnimationFrame(timestamp => {
-            const current = timestamp / 1000
-            const delta = current - previous
-            loop(context, objects, {
-                totalGameTime: current,
-                delta: delta,
-                fps: 1 / delta
-            })
-        })
     }
 
     const initialize = (context, content) => {
@@ -101,7 +101,7 @@ const wgl = (canvasId, game) => {
             programs: result[0],
             resources: result[1]
         }))
-        .then(objects => loop(context, objects, {
+        .then(objects => loop(game, context, objects, {
             totalGameTime: 0,
             delta: 0,
             fps: 0
