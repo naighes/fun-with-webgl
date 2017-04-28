@@ -45,7 +45,7 @@ function Game() {
                 type: 'img'
             },
             'heightmap': {
-                src: 'img/heightmap.png',
+                src: 'img/heightmap_2.png',
                 type: 'heightmap'
             },
             'skybox_xn': {
@@ -79,7 +79,7 @@ function Game() {
                  0.0, 1.0, 0.0, 1.0,
                  0.0, 0.0, 1.0, 1.0]
 
-    const camera = new Camera(vec3.fromValues(0.0, 0.0, 0.0),
+    const camera = new Camera(vec3.fromValues(0.0, 5.0, 0.0),
         vec3.fromValues(0.0, 0.0, -1.0))
 
     this.initialize = context => {
