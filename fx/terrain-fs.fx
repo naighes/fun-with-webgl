@@ -7,7 +7,7 @@ varying vec2 v_texcoord;
 varying vec3 v_normal;
 varying vec4 v_weight;
 
-uniform vec3 u_lightDirection;
+uniform vec3 u_lightPosition;
 uniform vec3 u_ambientLight;
 uniform mat4 u_worldInverseTranspose;
 uniform mat4 u_world;
@@ -17,22 +17,38 @@ uniform sampler2D u_grass_texture;
 uniform sampler2D u_rock_texture;
 uniform sampler2D u_snow_texture;
 
+vec3 worldSpaceNormal(mat4 worldInverseTranspose, vec3 normal) {
+    return normalize(mat3(worldInverseTranspose)*normal);
+}
+
+vec3 worldSpacePosition(mat4 world, vec3 position) {
+    return vec3(world*vec4(position, 1.0));
+}
+
+vec3 calculateSurfaceToLight(vec3 lightPosition, vec3 position) {
+    return normalize(lightPosition-position);
+}
+
+float calculateDiffuseCoefficient(vec3 lightPosition, vec3 worldPosition, vec3 worldNormal) {
+    // calculate the vector from this pixels surface
+    // to the light source
+    vec3 surfaceToLight = calculateSurfaceToLight(lightPosition, worldPosition);
+
+    return max(0.0, dot(worldNormal, surfaceToLight));
+}
+
 void main() {
     // because v_normal is a varying it's interpolated
     // we it will not be a uint vector. Normalizing it
     // will make it a unit vector again
-    vec3 normal = normalize(mat3(u_worldInverseTranspose)*v_normal);
+    vec3 worldNormal = worldSpaceNormal(u_worldInverseTranspose, v_normal);
 
     // calculate the location of this fragment (pixel)
     // in world coordinates
-    vec3 position = vec3(u_world*vec4(v_position, 1.0));
-
-    // calculate the vector from this pixels surface
-    // to the light source
-    vec3 surfaceToLight = normalize(u_lightDirection-position);
+    vec3 worldPosition = worldSpacePosition(u_world, v_position);
 
     // calculate the cosine of the angle of incidence
-    float diffuseCoefficient = max(0.0, dot(normal, surfaceToLight));
+    float diffuseCoefficient = calculateDiffuseCoefficient(u_lightPosition, worldPosition, worldNormal);
 
     // calculate final color of the pixel, based on:
     // 1. the angle of incidence: brightness

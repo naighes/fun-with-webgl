@@ -17,7 +17,7 @@ function Terrain(heightMapName, assets) {
     let rockTexture = null
     let snowTexture = null
 
-    const lightDirection = vec3.normalize(vec3.create(), vec3.fromValues(0.5, 0.7, -1.0))
+    const lightPosition = vec3.normalize(vec3.create(), vec3.fromValues(0.5, 0.7, -1.0))
     const ambientLight = vec3.fromValues(0.2, 0.2, 0.2)
 
     const createBuffer = (context, data, target) => {
@@ -66,7 +66,7 @@ function Terrain(heightMapName, assets) {
             'u_world': context.getUniformLocation(program, 'u_world'),
             'u_worldInverseTranspose': context.getUniformLocation(program, 'u_worldInverseTranspose'),
             'u_worldViewProjection': context.getUniformLocation(program, 'u_worldViewProjection'),
-            'u_lightDirection': context.getUniformLocation(program, 'u_lightDirection'),
+            'u_lightPosition': context.getUniformLocation(program, 'u_lightPosition'),
             'u_ambientLight': context.getUniformLocation(program, 'u_ambientLight'),
             'a_position': context.getAttribLocation(program, 'a_position'),
             'a_texcoord': context.getAttribLocation(program, 'a_texcoord'),
@@ -117,8 +117,8 @@ function Terrain(heightMapName, assets) {
             false,
             this.camera.calculateModelViewProjection(context, world))
 
-        context.uniform3fv(attributes['u_lightDirection'],
-            lightDirection)
+        context.uniform3fv(attributes['u_lightPosition'],
+            lightPosition)
 
         context.uniform3fv(attributes['u_ambientLight'],
             ambientLight)
