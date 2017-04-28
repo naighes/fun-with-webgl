@@ -3,18 +3,22 @@ const vec3 = glmatrix.vec3
 const mat4 = glmatrix.mat4
 const geometry = require('./geometry')
 
-function Terrain(heightMapName, textureAssetName) {
+function Terrain(heightMapName, assets) {
     let positionBuffer = null
     let indexBuffer = null
     let textureBuffer = null
     let normalsBuffer = null
+    let weightBuffer = null
     let program = null
     let attributes = null
     let terrain = null
-    let texture = null
+    let sandTexture = null
+    let grassTexture = null
+    let rockTexture = null
+    let snowTexture = null
 
     const lightDirection = vec3.normalize(vec3.create(), vec3.fromValues(0.5, 0.7, -1.0))
-    const ambientLight = vec3.fromValues(0.8, 0.8, 0.8)
+    const ambientLight = vec3.fromValues(0.2, 0.2, 0.2)
 
     const createBuffer = (context, data, target) => {
         const buffer = context.createBuffer()
@@ -51,6 +55,9 @@ function Terrain(heightMapName, textureAssetName) {
         normalsBuffer = createBuffer(context,
             terrain.normals,
             context.ARRAY_BUFFER)
+        weightBuffer = createBuffer(context,
+            terrain.weights,
+            context.ARRAY_BUFFER)
         textureBuffer = createBuffer(context,
             terrain.textureCoords,
             context.ARRAY_BUFFER)
@@ -59,35 +66,42 @@ function Terrain(heightMapName, textureAssetName) {
             'u_world': context.getUniformLocation(program, 'u_world'),
             'u_worldInverseTranspose': context.getUniformLocation(program, 'u_worldInverseTranspose'),
             'u_worldViewProjection': context.getUniformLocation(program, 'u_worldViewProjection'),
-            'u_reverseLightDirection': context.getUniformLocation(program, 'u_reverseLightDirection'),
+            'u_lightDirection': context.getUniformLocation(program, 'u_lightDirection'),
             'u_ambientLight': context.getUniformLocation(program, 'u_ambientLight'),
             'a_position': context.getAttribLocation(program, 'a_position'),
             'a_texcoord': context.getAttribLocation(program, 'a_texcoord'),
-            'a_normal': context.getAttribLocation(program, 'a_normal')
+            'a_normal': context.getAttribLocation(program, 'a_normal'),
+            'a_weight': context.getAttribLocation(program, 'a_weight'),
+            'u_sand_texture': context.getUniformLocation(program, 'u_sand_texture'),
+            'u_grass_texture': context.getUniformLocation(program, 'u_grass_texture'),
+            'u_rock_texture': context.getUniformLocation(program, 'u_rock_texture'),
+            'u_snow_texture': context.getUniformLocation(program, 'u_snow_texture')
         }
 
-        texture = createAndBindTexture(context, content, textureAssetName)
+        sandTexture = createAndBindTexture(context, content, assets.sand)
+        grassTexture = createAndBindTexture(context, content, assets.grass)
+        rockTexture = createAndBindTexture(context, content, assets.rock)
+        snowTexture = createAndBindTexture(context, content, assets.snow)
     }
 
     const createAndBindTexture = (context, content, assetName) => {
-        texture = context.createTexture()
+        const texture = context.createTexture()
         context.bindTexture(context.TEXTURE_2D, texture)
         context.texImage2D(context.TEXTURE_2D,
             0,
             context.RGBA,
             context.RGBA,
             context.UNSIGNED_BYTE,
-            content.resources[textureAssetName].content)
+            content.resources[assetName].content)
         context.generateMipmap(context.TEXTURE_2D)
 
         return texture
     }
 
-    let world = mat4.create()
-
     this.update = (context, time) => {
         context.useProgram(program)
 
+        const world = mat4.create()
         const worldInverse = mat4.invert(mat4.create(), world)
         const worldInverseTranspose = mat4.transpose(mat4.create(), worldInverse)
 
@@ -103,7 +117,7 @@ function Terrain(heightMapName, textureAssetName) {
             false,
             this.camera.calculateModelViewProjection(context, world))
 
-        context.uniform3fv(attributes['u_reverseLightDirection'],
+        context.uniform3fv(attributes['u_lightDirection'],
             lightDirection)
 
         context.uniform3fv(attributes['u_ambientLight'],
@@ -116,7 +130,24 @@ function Terrain(heightMapName, textureAssetName) {
         sendData(context, positionBuffer, 3, 'a_position')
         sendData(context, textureBuffer, 2, 'a_texcoord')
         sendData(context, normalsBuffer, 3, 'a_normal')
-        context.bindTexture(context.TEXTURE_2D, texture)
+        sendData(context, weightBuffer, 4, 'a_weight')
+
+        context.uniform1i(attributes['u_sand_texture'], 0)
+        context.uniform1i(attributes['u_grass_texture'], 1)
+        context.uniform1i(attributes['u_rock_texture'], 2)
+        context.uniform1i(attributes['u_snow_texture'], 3)
+
+        context.activeTexture(context.TEXTURE0)
+        context.bindTexture(context.TEXTURE_2D, sandTexture)
+
+        context.activeTexture(context.TEXTURE1)
+        context.bindTexture(context.TEXTURE_2D, grassTexture)
+
+        context.activeTexture(context.TEXTURE2)
+        context.bindTexture(context.TEXTURE_2D, rockTexture)
+
+        context.activeTexture(context.TEXTURE3)
+        context.bindTexture(context.TEXTURE_2D, snowTexture)
 
         context.bindBuffer(context.ELEMENT_ARRAY_BUFFER, indexBuffer)
         context.drawElements(context.TRIANGLES,

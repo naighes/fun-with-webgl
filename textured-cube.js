@@ -51,14 +51,15 @@ function TexturedCube(size, assetName) {
             'u_lightWorldPosition': context.getUniformLocation(program, 'u_lightWorldPosition'),
             'a_position': context.getAttribLocation(program, 'a_position'),
             'a_texcoord': context.getAttribLocation(program, 'a_texcoord'),
-            'a_normal': context.getAttribLocation(program, 'a_normal')
+            'a_normal': context.getAttribLocation(program, 'a_normal'),
+            'u_texture': context.getUniformLocation(program, 'u_texture')
         }
 
         texture = createAndBindTexture(context, content, assetName)
     }
 
     const createAndBindTexture = (context, content, assetName) => {
-        texture = context.createTexture()
+        const texture = context.createTexture()
         context.bindTexture(context.TEXTURE_2D, texture)
         context.texImage2D(context.TEXTURE_2D,
             0,
@@ -119,6 +120,9 @@ function TexturedCube(size, assetName) {
         sendData(context, positionBuffer, 3, 'a_position')
         sendData(context, textureBuffer, 2, 'a_texcoord')
         sendData(context, normalsBuffer, 3, 'a_normal')
+
+        context.uniform1i(attributes['u_texture'], 0)
+        context.activeTexture(context.TEXTURE0)
         context.bindTexture(context.TEXTURE_2D, texture)
 
         context.drawArrays(context.TRIANGLES, // primitive type

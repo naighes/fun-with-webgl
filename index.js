@@ -28,8 +28,20 @@ function Game() {
                 src: 'img/metal_box.jpg',
                 type: 'img'
             },
-            'lava-rock': {
-                src: 'img/lava_rock.jpg',
+            'sand': {
+                src: 'img/sand.jpg',
+                type: 'img'
+            },
+            'grass': {
+                src: 'img/grass.jpg',
+                type: 'img'
+            },
+            'rock': {
+                src: 'img/rock.jpg',
+                type: 'img'
+            },
+            'snow': {
+                src: 'img/snow.jpg',
                 type: 'img'
             },
             'heightmap': {
@@ -101,7 +113,12 @@ function Game() {
         cube2.camera = camera
         this.objects.push(cube2)
 
-        const terrain = new Terrain('heightmap', 'lava-rock')
+        const terrain = new Terrain('heightmap', {
+            sand: 'sand',
+            grass: 'grass',
+            rock: 'rock',
+            snow: 'snow'
+        })
         terrain.camera = camera
         this.objects.push(terrain)
     }

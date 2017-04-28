@@ -137,6 +137,36 @@ module.exports.createTerrain = (png, heightFactor, sizeFactor) => {
         return result
     }
 
+    const getWeights = png => {
+        const clamp = (num, min, max) => Math.max(min, Math.min(max, num))
+
+        let result = new Float32Array(png.getWidth()*png.getHeight()*4)
+        const h1 = 64, // sand
+              h2 = 64, // grass
+              h3 = 64, // rock
+              h4 = 64  // snow
+
+        for (let x = 0; x < png.getWidth(); x++) {
+            for (let y = 0; y < png.getHeight(); y++) {
+                const i = x*4+y*png.getWidth()*4
+                const height = png.getPixel(x, y)[0]
+
+                result[i+0] = clamp(1.0-Math.abs(height-h1*0)/(h1*1.0), 0.0, 1.0)
+                result[i+1] = clamp(1.0-Math.abs(height-h2*1)/(h2*2.0), 0.0, 1.0)
+                result[i+2] = clamp(1.0-Math.abs(height-h3*2)/(h3*3.0), 0.0, 1.0)
+                result[i+3] = clamp(1.0-Math.abs(height-h4*3)/(h4*4.0), 0.0, 1.0)
+
+                let total = result[i+0]+result[i+1]+result[i+2]+result[i+3]
+                result[i+0] = result[i+0]/total
+                result[i+1] = result[i+1]/total
+                result[i+2] = result[i+2]/total
+                result[i+3] = result[i+3]/total
+            }
+        }
+
+        return result
+    }
+
     const getIndices = png => {
         let result = new Uint16Array((png.getWidth()-1)*(png.getHeight()-1)*6)
         let counter = 0
@@ -220,11 +250,13 @@ module.exports.createTerrain = (png, heightFactor, sizeFactor) => {
     const indices = getIndices(png)
     const normals = getNormals(vertices, indices)
     const textureCoords = getTextureCoords(png, heightFactor, sizeFactor)
+    const weights = getWeights(png)
 
     return {
         vertices: vertices,
         indices: indices,
         normals: normals,
-        textureCoords: textureCoords
+        textureCoords: textureCoords,
+        weights: weights
     }
 }
