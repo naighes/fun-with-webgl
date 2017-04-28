@@ -17,6 +17,9 @@ uniform sampler2D u_grass_texture;
 uniform sampler2D u_rock_texture;
 uniform sampler2D u_snow_texture;
 
+vec3 lightWeight = vec3(1.0); // TODO: move out from shader
+vec3 ambientCoefficient = vec3(0.45); // TODO: move out from shader
+
 vec3 worldSpaceNormal(mat4 worldInverseTranspose, vec3 normal) {
     return normalize(mat3(worldInverseTranspose)*normal);
 }
@@ -37,6 +40,12 @@ float calculateDiffuseCoefficient(vec3 lightPosition, vec3 worldPosition, vec3 w
     return max(0.0, dot(worldNormal, surfaceToLight));
 }
 
+vec4 calculateSurfaceColor(sampler2D sampler, vec2 texcoord, float weight) {
+    vec4 t = texture2D(sampler, texcoord);
+
+    return vec4(t.xyz*weight, t.w);
+}
+
 void main() {
     // because v_normal is a varying it's interpolated
     // we it will not be a uint vector. Normalizing it
@@ -50,17 +59,17 @@ void main() {
     // calculate the cosine of the angle of incidence
     float diffuseCoefficient = calculateDiffuseCoefficient(u_lightPosition, worldPosition, worldNormal);
 
-    // calculate final color of the pixel, based on:
-    // 1. the angle of incidence: brightness
-    // 2. the color/intensities of the light
-    // 3. the texture and texture coord
-    vec4 surfaceColor = texture2D(u_sand_texture, v_texcoord)*v_weight.x+texture2D(u_grass_texture, v_texcoord)*v_weight.y+texture2D(u_rock_texture, v_texcoord)*v_weight.z+texture2D(u_snow_texture, v_texcoord)*v_weight.w;
+    vec4 sand = calculateSurfaceColor(u_sand_texture, v_texcoord, v_weight.x);
+    vec4 grass = calculateSurfaceColor(u_grass_texture, v_texcoord, v_weight.y);
+    vec4 rock = calculateSurfaceColor(u_rock_texture, v_texcoord, v_weight.z);
+    vec4 snow = calculateSurfaceColor(u_snow_texture, v_texcoord, v_weight.w);
 
-    vec3 lightWeight = vec3(1.0); // TODO: move out from shader
-    vec3 ambientCoefficient = vec3(0.15); // TODO: move out from shader
+    vec4 surfaceColor = sand+grass+rock+snow;
+
     vec3 ambient = ambientCoefficient*surfaceColor.rgb*lightWeight;
     vec3 diffuse = diffuseCoefficient*surfaceColor.rgb*lightWeight;
-
-    gl_FragColor = vec4(ambient+diffuse, surfaceColor.a);
+    vec3 finalColor = ambient+diffuse;
+    vec3 clamped = vec3(min(finalColor.x, 1.0), min(finalColor.y, 1.0), min(finalColor.z, 1.0));
+    gl_FragColor = vec4(clamped, surfaceColor.a);
 }
 

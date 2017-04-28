@@ -17,8 +17,8 @@ function Terrain(heightMapName, assets) {
     let rockTexture = null
     let snowTexture = null
 
-    const lightPosition = vec3.normalize(vec3.create(), vec3.fromValues(0.5, 0.7, -1.0))
-    const ambientLight = vec3.fromValues(0.2, 0.2, 0.2)
+    const lightPosition = vec3.normalize(vec3.create(), vec3.fromValues(1.0, 0.3, -1.0))
+    const ambientLight = vec3.fromValues(1.0, 0.549, 0.0)
 
     const createBuffer = (context, data, target) => {
         const buffer = context.createBuffer()
