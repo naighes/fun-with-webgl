@@ -137,21 +137,22 @@ module.exports.createTerrain = (png, heightFactor, sizeFactor) => {
         return result
     }
 
-    // TODO: review to be more generic
     const getWeights = png => {
         const clamp = (num, min, max) => Math.max(min, Math.min(max, num))
 
         let result = new Float32Array(png.getWidth()*png.getHeight()*4)
+        const h = png.getWidth()/4
+        const d = h*0.6
 
         for (let x = 0; x < png.getWidth(); x++) {
             for (let y = 0; y < png.getHeight(); y++) {
                 const i = x*4+y*png.getWidth()*4
                 const height = png.getPixel(x, y)[0]
 
-                result[i+0] = clamp(1.0-Math.abs(height-0.0)/68.3, 0.0, 1.0)
-                result[i+1] = clamp(1.0-Math.abs(height-85.0)/51.2, 0.0, 1.0)
-                result[i+2] = clamp(1.0-Math.abs(height-170.0)/51.2, 0.0, 1.0)
-                result[i+3] = clamp(1.0-Math.abs(height-255.0)/51.2, 0.0, 1.0)
+                result[i+0] = clamp(1.0-Math.abs(height-(h*0))/d, 0.0, 1.0)
+                result[i+1] = clamp(1.0-Math.abs(height-(h*1))/d, 0.0, 1.0)
+                result[i+2] = clamp(1.0-Math.abs(height-(h*2))/d, 0.0, 1.0)
+                result[i+3] = clamp(1.0-Math.abs(height-(h*3))/d, 0.0, 1.0)
 
                 let total = result[i+0]+result[i+1]+result[i+2]+result[i+3]
                 result[i+0] = result[i+0]/total

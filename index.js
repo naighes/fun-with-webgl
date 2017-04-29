@@ -79,7 +79,7 @@ function Game() {
                  0.0, 1.0, 0.0, 1.0,
                  0.0, 0.0, 1.0, 1.0]
 
-    const camera = new Camera(vec3.fromValues(0.0, 5.0, 0.0),
+    const camera = new Camera(vec3.fromValues(0.0, 8.0, 0.0),
         vec3.fromValues(0.0, 0.0, -1.0))
 
     this.initialize = context => {
