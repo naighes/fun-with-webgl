@@ -17,6 +17,8 @@ uniform sampler2D u_grass_texture;
 uniform sampler2D u_rock_texture;
 uniform sampler2D u_snow_texture;
 
+varying float v_clipDist;
+
 vec3 lightWeight = vec3(1.0); // TODO: move out from shader
 vec3 ambientCoefficient = vec3(0.45); // TODO: move out from shader
 
@@ -47,6 +49,10 @@ vec4 calculateSurfaceColor(sampler2D sampler, vec2 texcoord, float weight) {
 }
 
 void main() {
+    // Reject fragments behind the clip plane
+    //if (v_clipDist < 0.0)
+    //    discard;
+
     // because v_normal is a varying it's interpolated
     // we it will not be a uint vector. Normalizing it
     // will make it a unit vector again

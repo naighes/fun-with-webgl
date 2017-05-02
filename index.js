@@ -79,12 +79,10 @@ function Game() {
                  0.0, 1.0, 0.0, 1.0,
                  0.0, 0.0, 1.0, 1.0]
 
-    const camera = new Camera(vec3.fromValues(0.0, 8.0, 0.0),
+    const camera = new Camera(vec3.fromValues(0.0, 8.0, 150.0),
         vec3.fromValues(0.0, 0.0, -1.0))
 
     this.initialize = context => {
-        // HACK: keeping CULL_FACE disabled (it prevents skybox rendering)
-        // context.enable(context.CULL_FACE)
         this.objects.push(camera)
 
         const skybox = new Skybox(1.0)

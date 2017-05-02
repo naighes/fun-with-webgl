@@ -81,11 +81,10 @@ function Skybox(size) {
 
         const translation = mat4.create()
         const position = this.camera.getPosition()
-        //console.log(position)
         mat4.translate(translation, translation, position)
         mat4.multiply(world, world, translation)
 
-        const view = this.camera.calculateModelView(world)
+        const view = this.camera.getWorldView(world)
         context.uniformMatrix4fv(attributes['u_view'],
             false,
             view)
@@ -96,7 +95,7 @@ function Skybox(size) {
             false,
             viewInverse)
 
-        const projection = this.camera.calculateProjection(context)
+        const projection = this.camera.getProjection(context)
         context.uniformMatrix4fv(attributes['u_projection'],
             false,
             projection)
@@ -105,6 +104,9 @@ function Skybox(size) {
     this.draw = (context, time) => {
         context.useProgram(program)
 
+        // HACK: keeping CULL_FACE disabled (it
+        // prevents skybox rendering)
+        context.disable(context.CULL_FACE)
         context.disable(context.DEPTH_TEST)
         context.depthMask(false)
 
@@ -116,6 +118,7 @@ function Skybox(size) {
 
         context.depthMask(true)
         context.enable(context.DEPTH_TEST)
+        context.enable(context.CULL_FACE)
     }
 }
 

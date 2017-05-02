@@ -108,7 +108,7 @@ function TexturedCube(size, assetName) {
 
         context.uniformMatrix4fv(attributes['u_worldViewProjection'],
             false,
-            this.camera.calculateModelViewProjection(context, world))
+            this.camera.getWorldViewProjection(context, world))
 
         context.uniform3fv(attributes['u_lightWorldPosition'],
             lightPosition)

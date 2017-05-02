@@ -49,7 +49,7 @@ function Triangle(vertices, tint) {
 
         context.uniformMatrix4fv(context.getUniformLocation(program, 'u_worldViewProjection'),
             false,
-            this.camera.calculateModelViewProjection(context, world))
+            this.camera.getWorldViewProjection(context, world))
 
         context.uniform3fv(context.getUniformLocation(program, "u_reverseLightDirection"),
             lightDirection)
