@@ -1,3 +1,5 @@
+precision mediump float;
+
 uniform mat4 u_view;
 uniform mat4 u_viewInverse;
 uniform mat4 u_projection;
@@ -10,4 +12,3 @@ void main() {
     v_position = a_position;
     gl_Position = u_projection*u_view*a_position;
 }
-

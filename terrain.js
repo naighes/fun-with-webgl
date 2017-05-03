@@ -4,7 +4,7 @@ const vec4 = glmatrix.vec4
 const mat4 = glmatrix.mat4
 const geometry = require('./geometry')
 
-function Terrain(heightMapName, assets) {
+function Terrain(camera, heightMapName, assets) {
     let positionBuffer = null
     let indexBuffer = null
     let textureBuffer = null
@@ -63,10 +63,12 @@ function Terrain(heightMapName, assets) {
         attributes = {
             'u_world': context.getUniformLocation(program, 'u_world'),
             'u_worldInverseTranspose': context.getUniformLocation(program, 'u_worldInverseTranspose'),
-            'u_worldViewProjection': context.getUniformLocation(program, 'u_worldViewProjection'),
+            'u_view': context.getUniformLocation(program, 'u_view'),
+            'u_projection': context.getUniformLocation(program, 'u_projection'),
             'u_lightPosition': context.getUniformLocation(program, 'u_lightPosition'),
             'u_ambientLight': context.getUniformLocation(program, 'u_ambientLight'),
             'u_clipPlane': context.getUniformLocation(program, 'u_clipPlane'),
+            'u_enableClipping': context.getUniformLocation(program, 'u_enableClipping'),
             'a_position': context.getAttribLocation(program, 'a_position'),
             'a_texcoord': context.getAttribLocation(program, 'a_texcoord'),
             'a_normal': context.getAttribLocation(program, 'a_normal'),
@@ -116,25 +118,18 @@ function Terrain(heightMapName, assets) {
         const worldInverseTranspose = mat4.transpose(mat4.create(), worldInverse)
         context.uniformMatrix4fv(attributes['u_worldInverseTranspose'], false, worldInverseTranspose)
 
-        const worldViewProjection = this.camera.getWorldViewProjection(context, world)
-        context.uniformMatrix4fv(attributes['u_worldViewProjection'], false, worldViewProjection)
+        const view = camera.getView()
+        context.uniformMatrix4fv(attributes['u_view'], false, view)
 
-        const plane = createPlane(-50.0, false, worldViewProjection)
+        const projection = camera.getProjection(context)
+        context.uniformMatrix4fv(attributes['u_projection'], false, projection)
+
+        const plane = vec4.fromValues(0.0, 1.0, 0.0, 7.5)
         context.uniform4fv(attributes['u_clipPlane'], plane)
+        context.uniform1f(attributes['u_enableClipping'], 0)
 
         context.uniform3fv(attributes['u_lightPosition'], lightPosition)
         context.uniform3fv(attributes['u_ambientLight'], ambientLight)
-    }
-
-    const createPlane = (height, clipSide, worldViewProjection) => {
-        const inverse = mat4.invert(mat4.create(), worldViewProjection)
-        const transpose = mat4.transpose(mat4.create(), inverse)
-
-        let plane = clipSide
-            ? vec4.fromValues(0.0, -1.0, 0.0, height)
-            : vec4.fromValues(0.0, 1.0, 0.0, -1.0*height)
-
-        return vec4.transformMat4(vec4.create(), plane, transpose)
     }
 
     this.draw = (context, time) => {

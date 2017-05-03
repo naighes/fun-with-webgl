@@ -124,9 +124,9 @@ module.exports.createTerrain = (png, heightFactor, sizeFactor) => {
 
         for (let x = 0; x < png.getWidth(); x++) {
             for (let y = 0; y < png.getHeight(); y++) {
-                const w = (x-(png.getWidth()/2))*sizeFactor
+                const w = x*sizeFactor
                 const h = (png.getPixel(x, y)[0]-127)*heightFactor
-                const d = -1.0*(y-(png.getHeight()/2))*sizeFactor
+                const d = -1.0*y*sizeFactor
                 const i = x*3+y*png.getWidth()*3
                 result[i+0] = w
                 result[i+1] = h

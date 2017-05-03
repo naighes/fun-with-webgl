@@ -17,11 +17,11 @@ function Game() {
 
     this.config = {
         shaders: {
-            'colored-cube': { vs: 'fx/colored-cube-vs.fx', fs: 'fx/colored-cube-fs.fx' },
-            'textured-cube': { vs: 'fx/textured-cube-vs.fx', fs: 'fx/textured-cube-fs.fx' },
-            'colored-triangle': { vs: 'fx/colored-triangle-vs.fx', fs: 'fx/colored-triangle-fs.fx' },
-            'terrain': { vs: 'fx/terrain-vs.fx', fs: 'fx/terrain-fs.fx' },
-            'skybox': { vs: 'fx/skybox-vs.fx', fs: 'fx/skybox-fs.fx' }
+            'colored-cube': { vs: 'fx/colored-cube-vs.glsl', fs: 'fx/colored-cube-fs.glsl' },
+            'textured-cube': { vs: 'fx/textured-cube-vs.glsl', fs: 'fx/textured-cube-fs.glsl' },
+            'colored-triangle': { vs: 'fx/colored-triangle-vs.glsl', fs: 'fx/colored-triangle-fs.glsl' },
+            'terrain': { vs: 'fx/terrain-vs.glsl', fs: 'fx/terrain-fs.glsl' },
+            'skybox': { vs: 'fx/skybox-vs.glsl', fs: 'fx/skybox-fs.glsl' }
         },
         resources: {
             'metal-box': {
@@ -79,46 +79,37 @@ function Game() {
                  0.0, 1.0, 0.0, 1.0,
                  0.0, 0.0, 1.0, 1.0]
 
-    const camera = new Camera(vec3.fromValues(0.0, 8.0, 150.0),
+    const camera = new Camera(vec3.fromValues(0.0, 0.0, 0.0),
         vec3.fromValues(0.0, 0.0, -1.0))
 
     this.initialize = context => {
         this.objects.push(camera)
 
-        const skybox = new Skybox(1.0)
-        skybox.camera = camera
-        this.objects.push(skybox)
+        this.objects.push(new Skybox(camera, 1.0))
 
-        const triangles = [[0.0, 0.5,
-                            0.0, 1.0,
-                            0.7, 0.5],
-                           [-0.5, -0.5,
-                            -0.9, -0.5,
-                            -0.5, -0.8],
-                           [-0.5, 0.9,
-                            -0.9, 0.9,
-                            -0.5, 0.2]]
-        triangles.map(t => new Triangle(t, rgb)).forEach(t => {
-            t.camera = camera
-            this.objects.push(t)
-        })
+        //const triangles = [[+300.0, -4.0, -300.0,
+        //                    -300.0, -4.0, -300.0,
+        //                    -300.0, -4.0, +300.0],
+        //                   [-300.0, -4.0, +300.0,
+        //                    +300.0, -4.0, +300.0,
+        //                    +300.0, -4.0, -300.0]]
+        //triangles.map(t => new Triangle(camera, t, rgb))
+        //    .forEach(t => this.objects.push(t))
 
-        const cube1 = new ColoredCube(0.5)
-        cube1.camera = camera
-        this.objects.push(cube1)
-
-        const cube2 = new TexturedCube(1.3, 'metal-box')
-        cube2.camera = camera
-        this.objects.push(cube2)
-
-        const terrain = new Terrain('heightmap', {
-            sand: 'sand',
-            grass: 'grass',
-            rock: 'rock',
-            snow: 'snow'
-        })
-        terrain.camera = camera
-        this.objects.push(terrain)
+        this.objects.push(new ColoredCube(camera,
+            0.5,
+            vec3.fromValues(0.0, 0.0, -1.0)))
+        this.objects.push(new TexturedCube(camera,
+            1.3,
+            vec3.fromValues(0.55, -0.8, -2.0),
+            'metal-box'))
+        this.objects.push(new Terrain(camera,
+            'heightmap', {
+                sand: 'sand',
+                grass: 'grass',
+                rock: 'rock',
+                snow: 'snow'
+            }))
     }
 
     this.update = (context, time) => {

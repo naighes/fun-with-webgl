@@ -3,7 +3,7 @@ const vec3 = glmatrix.vec3
 const mat4 = glmatrix.mat4
 const geometry = require('./geometry')
 
-function ColoredCube(size) {
+function ColoredCube(camera, size, position) {
     const cube = geometry.createCube(size)
 
     const r = [1.0, 0.0, 0.0, 1.0],
@@ -42,13 +42,12 @@ function ColoredCube(size) {
         const attribute = attributes[name]
         context.enableVertexAttribArray(attribute)
 
-        // tell the attribute how to get data out of buffer (ARRAY_BUFFER)
         context.vertexAttribPointer(attribute,
-            size, // size: # of components per iteration
-            context.FLOAT, // type: the data is 32bit floats
-            false, // normalize: don't normalize the data
-            0, // stride: 0 = move forward size * sizeof(type) each iteration to get the next position
-            0) // offset: start at the beginning of the buffer
+            size,
+            context.FLOAT,
+            false,
+            0,
+            0)
     }
 
     this.initialize = (context, content) => {
@@ -82,31 +81,19 @@ function ColoredCube(size) {
         const rxry = mat4.create()
         mat4.multiply(rxry, rx, ry)
 
-        const translation = vec3.create()
-        vec3.set(translation, -1.1, 0.0, 0.0)
-        const t = mat4.create()
-        mat4.translate(t, t, translation)
+        const translation = mat4.create()
+        mat4.translate(translation, translation, position)
 
         const world = mat4.create()
-        mat4.multiply(world, t, rxry)
+        mat4.multiply(world, translation, rxry)
 
         const worldInverse = mat4.invert(mat4.create(), world)
         const worldInverseTranspose = mat4.transpose(mat4.create(), worldInverse);
 
-        context.uniformMatrix4fv(attributes['u_world'],
-            false,
-            world)
-
-        context.uniformMatrix4fv(attributes['u_worldInverseTranspose'],
-            false,
-            world)
-
-        context.uniformMatrix4fv(attributes['u_worldViewProjection'],
-            false,
-            this.camera.getWorldViewProjection(context, world))
-
-        context.uniform3fv(attributes['u_lightWorldPosition'],
-            lightPosition)
+        context.uniformMatrix4fv(attributes['u_world'], false, world)
+        context.uniformMatrix4fv(attributes['u_worldInverseTranspose'], false, world)
+        context.uniformMatrix4fv(attributes['u_worldViewProjection'], false, camera.getWorldViewProjection(context, world))
+        context.uniform3fv(attributes['u_lightWorldPosition'], lightPosition)
     }
 
     this.draw = (context, time) => {
@@ -116,9 +103,9 @@ function ColoredCube(size) {
         sendData(context, colorBuffer, 4, 'a_color')
         sendData(context, normalsBuffer, 3, 'a_normal')
 
-        context.drawArrays(context.TRIANGLES, // primitive type
-            0, // offset
-            cube.vertices.length/3) // count
+        context.drawArrays(context.TRIANGLES,
+            0,
+            cube.vertices.length/3)
     }
 }
 
