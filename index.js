@@ -79,8 +79,8 @@ function Game() {
                  0.0, 1.0, 0.0, 1.0,
                  0.0, 0.0, 1.0, 1.0]
 
-    const camera = new Camera(vec3.fromValues(0.0, 0.0, 0.0),
-        vec3.fromValues(0.0, 0.0, -1.0))
+    const camera = new Camera(vec3.fromValues(30.0, 10.0, -50.0),
+        vec3.fromValues(0.0, 0.0, -51.0))
 
     let terrain = null
     let skybox = null

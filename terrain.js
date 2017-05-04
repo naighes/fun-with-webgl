@@ -229,11 +229,15 @@ function Terrain(camera, heightMapName, assets, waterHeight) {
         const right = vec3.transformMat4(vec3.create(),
             vec3.fromValues(1.0, 0.0, 0.0),
             camera.getRotation())
-        const up = vec3.cross(vec3.create(),
+        let up = vec3.cross(vec3.create(),
             right,
-            target-position);
+            vec3.subtract(vec3.create(), target, position))
+        vec3.normalize(up, up)
 
-        return mat4.lookAt(mat4.create(), position, target, up)
+        return mat4.lookAt(mat4.create(),
+            position,
+            target,
+            up)
     }
 
     this.draw = (context, time) => {
