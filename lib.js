@@ -108,17 +108,8 @@ const wgl = (canvasId, game) => {
         }))
 }
 
-const getContext = canvas => {
-    const context = canvas.getContext('webgl') ||
+const getContext = canvas => canvas.getContext('webgl') ||
         canvas.getContext('experimental-webgl')
-
-    if (!context) {
-        context.viewportWidth = canvas.width
-        context.viewportHeight = canvas.height
-    }
-
-    return context
-}
 
 const createShader = (context, type, source) => {
     let shader = context.createShader(type)

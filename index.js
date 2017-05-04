@@ -82,20 +82,11 @@ function Game() {
     const camera = new Camera(vec3.fromValues(0.0, 0.0, 0.0),
         vec3.fromValues(0.0, 0.0, -1.0))
 
+    let terrain = null
+
     this.initialize = context => {
         this.objects.push(camera)
-
         this.objects.push(new Skybox(camera, 1.0))
-
-        //const triangles = [[+300.0, -4.0, -300.0,
-        //                    -300.0, -4.0, -300.0,
-        //                    -300.0, -4.0, +300.0],
-        //                   [-300.0, -4.0, +300.0,
-        //                    +300.0, -4.0, +300.0,
-        //                    +300.0, -4.0, -300.0]]
-        //triangles.map(t => new Triangle(camera, t, rgb))
-        //    .forEach(t => this.objects.push(t))
-
         this.objects.push(new ColoredCube(camera,
             0.5,
             vec3.fromValues(0.0, 0.0, -1.0)))
@@ -103,27 +94,32 @@ function Game() {
             1.3,
             vec3.fromValues(0.55, -0.8, -2.0),
             'metal-box'))
-        this.objects.push(new Terrain(camera,
+        terrain = new Terrain(camera,
             'heightmap', {
                 sand: 'sand',
                 grass: 'grass',
                 rock: 'rock',
                 snow: 'snow'
-            }))
+            })
+        this.objects.push(terrain)
     }
 
     this.update = (context, time) => {
     }
 
     this.draw = (context, time) => {
-        context.clearColor(0.0, 0.0, 0.0, 1.0)
-        // enable depth testing
         context.enable(context.DEPTH_TEST)
-        // near things obscure far things
         context.depthFunc(context.LEQUAL)
-        // clear the color as well as the depth buffer
-        context.clear(context.COLOR_BUFFER_BIT | context.DEPTH_BUFFER_BIT)
+        context.clearColor(0.0, 0.0, 0.0, 1.0)
         context.viewport(0, 0, context.drawingBufferWidth, context.drawingBufferHeight)
+
+        context.clear(context.COLOR_BUFFER_BIT | context.DEPTH_BUFFER_BIT)
+        terrain.drawRefraction(context, time)
+
+        context.clear(context.COLOR_BUFFER_BIT | context.DEPTH_BUFFER_BIT)
+        terrain.drawReflection(context, time)
+
+        context.clear(context.COLOR_BUFFER_BIT | context.DEPTH_BUFFER_BIT)
     }
 }
 

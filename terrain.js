@@ -10,6 +10,9 @@ function Terrain(camera, heightMapName, assets) {
     let textureBuffer = null
     let normalsBuffer = null
     let weightBuffer = null
+    let refractionFrameBuffer = null
+    let refractionRenderBuffer = null
+    let refractionTexture = null
     let program = null
     let attributes = null
     let terrain = null
@@ -26,19 +29,80 @@ function Terrain(camera, heightMapName, assets) {
         return buffer
     }
 
+    const createFrameBuffer = context => {
+        const buffer = context.createFramebuffer()
+        context.bindFramebuffer(context.FRAMEBUFFER, buffer)
+
+        return buffer
+    }
+
+    const createRenderBuffer = context => {
+        const buffer = context.createRenderbuffer()
+        context.bindRenderbuffer(context.RENDERBUFFER, buffer)
+        context.renderbufferStorage(context.RENDERBUFFER,
+            context.DEPTH_COMPONENT16,
+            context.canvas.width,
+            context.canvas.height)
+
+        return buffer
+    }
+
+    const createRefractionTexture = context => {
+        const texture = context.createTexture()
+        context.bindTexture(context.TEXTURE_2D, texture)
+
+        context.texParameteri(context.TEXTURE_2D,
+            context.TEXTURE_MIN_FILTER,
+            context.LINEAR);
+        context.texParameteri(context.TEXTURE_2D,
+            context.TEXTURE_MAG_FILTER,
+            context.LINEAR)
+        context.texParameteri(context.TEXTURE_2D,
+            context.TEXTURE_WRAP_S,
+            context.CLAMP_TO_EDGE);
+        context.texParameteri(context.TEXTURE_2D,
+            context.TEXTURE_WRAP_T,
+            context.CLAMP_TO_EDGE);
+
+        context.texImage2D(context.TEXTURE_2D,
+            0,
+            context.RGBA,
+            context.canvas.width,
+            context.canvas.height,
+            0,
+            context.RGBA,
+            context.UNSIGNED_BYTE,
+            null)
+
+        return texture
+    }
+
+    const createAndBindTexture = (context, content, assetName) => {
+        const texture = context.createTexture()
+        context.bindTexture(context.TEXTURE_2D, texture)
+        context.texImage2D(context.TEXTURE_2D,
+            0,
+            context.RGBA,
+            context.RGBA,
+            context.UNSIGNED_BYTE,
+            content.resources[assetName].content)
+        context.generateMipmap(context.TEXTURE_2D)
+
+        return texture
+    }
+
     const sendData = (context, buffer, size, name) => {
         context.bindBuffer(context.ARRAY_BUFFER, buffer)
 
         const attribute = attributes[name]
         context.enableVertexAttribArray(attribute)
 
-        // tell the attribute how to get data out of buffer (ARRAY_BUFFER)
         context.vertexAttribPointer(attribute,
-            size, // size: # of components per iteration
-            context.FLOAT, // type: the data is 32bit floats
-            false, // normalize: don't normalize the data
-            0, // stride: 0 = move forward size * sizeof(type) each iteration to get the next position
-            0) // offset: start at the beginning of the buffer
+            size,
+            context.FLOAT,
+            false,
+            0,
+            0)
     }
 
     this.initialize = (context, content) => {
@@ -59,6 +123,25 @@ function Terrain(camera, heightMapName, assets) {
         textureBuffer = createBuffer(context,
             terrain.textureCoords,
             context.ARRAY_BUFFER)
+
+        refractionFrameBuffer = createFrameBuffer(context)
+        refractionRenderBuffer = createRenderBuffer(context)
+        refractionTexture = createRefractionTexture(context)
+
+        context.framebufferTexture2D(context.FRAMEBUFFER,
+            context.COLOR_ATTACHMENT0,
+            context.TEXTURE_2D,
+            refractionTexture,
+            0)
+        context.framebufferRenderbuffer(context.FRAMEBUFFER,
+            context.DEPTH_ATTACHMENT,
+            context.RENDERBUFFER,
+            refractionRenderBuffer)
+
+        context.bindTexture(context.TEXTURE_2D, null)
+        context.bindRenderbuffer(context.RENDERBUFFER, null)
+        context.bindFramebuffer(context.FRAMEBUFFER, null)
+
         program = content.programs['terrain']
         attributes = {
             'u_world': context.getUniformLocation(program, 'u_world'),
@@ -94,20 +177,6 @@ function Terrain(camera, heightMapName, assets) {
         }]
     }
 
-    const createAndBindTexture = (context, content, assetName) => {
-        const texture = context.createTexture()
-        context.bindTexture(context.TEXTURE_2D, texture)
-        context.texImage2D(context.TEXTURE_2D,
-            0,
-            context.RGBA,
-            context.RGBA,
-            context.UNSIGNED_BYTE,
-            content.resources[assetName].content)
-        context.generateMipmap(context.TEXTURE_2D)
-
-        return texture
-    }
-
     this.update = (context, time) => {
         context.useProgram(program)
 
@@ -126,15 +195,36 @@ function Terrain(camera, heightMapName, assets) {
 
         const plane = vec4.fromValues(0.0, 1.0, 0.0, 7.5)
         context.uniform4fv(attributes['u_clipPlane'], plane)
-        context.uniform1f(attributes['u_enableClipping'], 0)
 
         context.uniform3fv(attributes['u_lightPosition'], lightPosition)
         context.uniform3fv(attributes['u_ambientLight'], ambientLight)
     }
 
     this.draw = (context, time) => {
+        this.drawTerrain(context, time)
+    }
+
+    this.drawTerrain = (context, time) => {
         context.useProgram(program)
 
+        context.uniform1f(attributes['u_enableClipping'], 0)
+        drawScene(context, time)
+    }
+
+    this.drawRefraction = (context, time) => {
+        context.useProgram(program)
+
+        context.uniform1f(attributes['u_enableClipping'], 1)
+        context.bindFramebuffer(context.FRAMEBUFFER, refractionFrameBuffer)
+        drawScene(context, time)
+        context.bindFramebuffer(context.FRAMEBUFFER, null)
+    }
+
+    this.drawReflection = (context, time) => {
+        context.useProgram(program)
+    }
+
+    const drawScene = (context, time) => {
         sendData(context, positionBuffer, 3, 'a_position')
         sendData(context, textureBuffer, 2, 'a_texcoord')
         sendData(context, normalsBuffer, 3, 'a_normal')
