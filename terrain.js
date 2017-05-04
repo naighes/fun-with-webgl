@@ -157,6 +157,7 @@ function Terrain(camera, heightMapName, assets, waterHeight) {
             'u_world': context.getUniformLocation(program, 'u_world'),
             'u_worldInverseTranspose': context.getUniformLocation(program, 'u_worldInverseTranspose'),
             'u_view': context.getUniformLocation(program, 'u_view'),
+            'u_reflection_view': context.getUniformLocation(program, 'u_reflection_view'),
             'u_projection': context.getUniformLocation(program, 'u_projection'),
             'u_lightPosition': context.getUniformLocation(program, 'u_lightPosition'),
             'u_ambientLight': context.getUniformLocation(program, 'u_ambientLight'),
@@ -199,11 +200,15 @@ function Terrain(camera, heightMapName, assets, waterHeight) {
         const worldInverseTranspose = mat4.transpose(mat4.create(), worldInverse)
         context.uniformMatrix4fv(attributes['u_worldInverseTranspose'], false, worldInverseTranspose)
 
-        const view = camera.getView()
-        context.uniformMatrix4fv(attributes['u_view'], false, view)
-
-        const projection = camera.getProjection(context)
-        context.uniformMatrix4fv(attributes['u_projection'], false, projection)
+        context.uniformMatrix4fv(attributes['u_view'],
+            false,
+            camera.getView())
+        context.uniformMatrix4fv(attributes['u_reflection_view'],
+            false,
+            getReflectionView())
+        context.uniformMatrix4fv(attributes['u_projection'],
+            false,
+            camera.getProjection(context))
 
         context.uniform4fv(attributes['u_refractionClipPlane'],
             vec4.fromValues(0.0, 1.0, 0.0, -1.0*waterHeight))
@@ -213,6 +218,22 @@ function Terrain(camera, heightMapName, assets, waterHeight) {
 
         context.uniform3fv(attributes['u_lightPosition'], lightPosition)
         context.uniform3fv(attributes['u_ambientLight'], ambientLight)
+    }
+
+    const getReflectionView = () => {
+        const position = camera.getPosition()
+        position[1] = -1.0*position[1]+waterHeight*2.0
+        const target = camera.getTarget()
+        target[1] = -1.0*target[1]+waterHeight*2.0
+
+        const right = vec3.transformMat4(vec3.create(),
+            vec3.fromValues(1.0, 0.0, 0.0),
+            camera.getRotation())
+        const up = vec3.cross(vec3.create(),
+            right,
+            target-position);
+
+        return mat4.lookAt(mat4.create(), position, target, up)
     }
 
     this.draw = (context, time) => {

@@ -83,11 +83,13 @@ function Game() {
         vec3.fromValues(0.0, 0.0, -1.0))
 
     let terrain = null
+    let skybox = null
     const waterHeight = -7.5
 
     this.initialize = context => {
         this.objects.push(camera)
-        this.objects.push(new Skybox(camera, 1.0))
+        skybox = new Skybox(camera, 1.0)
+        this.objects.push(skybox)
         this.objects.push(new ColoredCube(camera,
             0.5,
             vec3.fromValues(0.0, 0.0, -1.0)))
@@ -110,6 +112,7 @@ function Game() {
     }
 
     this.draw = (context, time) => {
+        context.disable(context.CULL_FACE)
         context.enable(context.DEPTH_TEST)
         context.depthFunc(context.LEQUAL)
         context.clearColor(0.0, 0.0, 0.0, 1.0)

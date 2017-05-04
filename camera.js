@@ -3,23 +3,30 @@ const vec3 = glmatrix.vec3
 const mat4 = glmatrix.mat4
 const quat = glmatrix.quat
 
-function Camera(initialPosition, dir) {
-    let mvp = mat4.create()
+function Camera(position, target) {
     let driving = false
     let cx = 0
     let cy = 0
-    let xRot = (t, s) => 0.0
-    let yRot = (t, s) => 0.0
     let xMove = t => 0.0
     let zMove = t => 0.0
+    let currentTarget = vec3.copy(vec3.create(), target)
+    let view = mat4.lookAt(mat4.create(),
+        position,
+        target,
+        vec3.fromValues(0.0, 1.0, 0.0))
+
+    let rotationDelta = {
+        pitch: (t, s) => 0.0,
+        yaw: (t, s) => 0.0
+    }
+
+    const currentRotation = {
+        pitch: 0.0,
+        yaw: 0.0
+    }
+
     const moveSpeed = 16.0
     const rotationSpeed = 20.0
-
-    const initialDirection = dir
-
-    let position = initialPosition
-    let direction = vec3.create()
-    let rotation = quat.create()
 
     this.getProjection = context => {
         const result = mat4.create()
@@ -29,19 +36,11 @@ function Camera(initialPosition, dir) {
         return result
     }
 
-    this.getView = () => {
-        const result = mat4.create()
-        let center = vec3.create()
-        vec3.add(center, position, direction)
-        mat4.lookAt(result,
-            position, // eye:    position of the viewer
-            center, // center: point the viewer is looking at
-            vec3.fromValues(0.0, 1.0, 0.0)) // vec3  : pointing up
+    this.getView = () => view
 
-        return result
-    }
+    this.getPosition = () => vec3.copy(vec3.create(), position)
 
-    this.getPosition = () => position
+    this.getTarget = () => vec3.copy(vec3.create(), currentTarget)
 
     this.getWorldViewProjection = (context, world) => {
         const result = mat4.create()
@@ -66,11 +65,11 @@ function Camera(initialPosition, dir) {
     const mouseup = e => {
         driving = false
 
-        xRot = (t, s) => 0.0
-        yRot = (t, s) => 0.0
+        rotationDelta = {
+            pitch: (t, s) => 0.0,
+            yaw: (t, s) => 0.0
+        }
     }
-
-    const quaternion = quat.create()
 
     const mousemove = e => {
         const degToRad = value => value*Math.PI/180
@@ -84,8 +83,10 @@ function Camera(initialPosition, dir) {
         const dx = x-cx
         const dy = y-cy
 
-        xRot = (t, s) => degToRad(dy*t*s)
-        yRot = (t, s) => degToRad(dx*t*s)
+        rotationDelta = {
+            pitch: (t, s) => degToRad(dy*t*s),
+            yaw: (t, s) => degToRad(dx*t*s)
+        }
 
         cx = x
         cy = y
@@ -120,8 +121,6 @@ function Camera(initialPosition, dir) {
     }
 
     this.initialize = (context, content) => {
-        vec3.copy(direction, initialDirection)
-
         context.canvas.onmousedown = mousedown
         document.onmouseup = mouseup
         document.onmousemove = mousemove
@@ -129,41 +128,32 @@ function Camera(initialPosition, dir) {
         document.onkeyup = keyup
     }
 
+    this.getRotation = () => {
+        let pitch = mat4.fromXRotation(mat4.create(), currentRotation.pitch)
+        let yaw = mat4.fromYRotation(mat4.create(), currentRotation.yaw)
+
+        return mat4.multiply(mat4.create(), pitch, yaw)
+    }
+
     this.update = (context, time) => {
-        updateRotation(time, rotationSpeed)
-        updatePosition(time, moveSpeed)
-    }
+        currentRotation.pitch += rotationDelta.pitch(time.delta, rotationSpeed)
+        currentRotation.yaw += rotationDelta.yaw(time.delta, rotationSpeed)
 
-    const updatePosition = (time, speed) => {
-        if (xMove === 0.0 && zMove === 0.0) {
-            return
-        }
+        let rotation = this.getRotation()
+        let addVector = vec3.fromValues(xMove(time.delta, moveSpeed),
+            0.0,
+            zMove(time.delta, moveSpeed))
+        let rotatedVector = vec3.transformMat4(vec3.create(), addVector, rotation);
+        vec3.add(position, position, rotatedVector)
+        let rotatedTarget = vec3.transformMat4(vec3.create(),
+            vec3.copy(vec3.create(), target),
+            rotation)
+        currentTarget = vec3.add(currentTarget, position, rotatedTarget)
+        let rotatedUp = vec3.transformMat4(vec3.fromValues(0.0, 1.0, 0.0),
+            vec3.fromValues(0.0, 1.0, 0.0),
+            rotation)
 
-        let addVector = vec3.fromValues(xMove(time.delta, speed), 0.0, zMove(time.delta, speed))
-        vec3.transformQuat(addVector, addVector, rotation)
-        vec3.add(position, position, addVector)
-    }
-
-    const updateRotation = (time, speed) => {
-        const yaw = yRot(time.delta, speed)
-        const pitch = xRot(time.delta, speed)
-
-        if (yaw === 0.0 && pitch === 0.0) {
-            return
-        }
-
-        const rx = quat.create(), ry = quat.create()
-        quat.setAxisAngle(rx, vec3.fromValues(1.0, 0.0, 0.0), pitch)
-        quat.setAxisAngle(ry, vec3.fromValues(0.0, 1.0, 0.0), yaw)
-
-        const r = quat.create()
-        quat.multiply(r, rx, ry)
-
-        quat.multiply(rotation, rotation, r)
-        direction = vec3.create()
-        vec3.copy(direction, initialDirection)
-        vec3.transformQuat(direction, direction, rotation)
-        vec3.normalize(direction, direction)
+        view = mat4.lookAt(mat4.create(), position, currentTarget, rotatedUp)
     }
 }
 
