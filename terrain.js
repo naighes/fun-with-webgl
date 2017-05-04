@@ -10,13 +10,16 @@ function Terrain(camera, heightMapName, assets) {
     let textureBuffer = null
     let normalsBuffer = null
     let weightBuffer = null
-    let refractionFrameBuffer = null
-    let refractionRenderBuffer = null
-    let refractionTexture = null
+
+    let refraction = null
+    let reflection = null
+
     let program = null
     let attributes = null
     let terrain = null
     let textures = null
+
+    let waterHeight = 7.5
 
     const lightPosition = vec3.normalize(vec3.create(), vec3.fromValues(1.0, 0.3, -1.0))
     const ambientLight = vec3.fromValues(1.0, 0.549, 0.0)
@@ -27,54 +30,6 @@ function Terrain(camera, heightMapName, assets) {
         context.bufferData(target, data, context.STATIC_DRAW)
 
         return buffer
-    }
-
-    const createFrameBuffer = context => {
-        const buffer = context.createFramebuffer()
-        context.bindFramebuffer(context.FRAMEBUFFER, buffer)
-
-        return buffer
-    }
-
-    const createRenderBuffer = context => {
-        const buffer = context.createRenderbuffer()
-        context.bindRenderbuffer(context.RENDERBUFFER, buffer)
-        context.renderbufferStorage(context.RENDERBUFFER,
-            context.DEPTH_COMPONENT16,
-            context.canvas.width,
-            context.canvas.height)
-
-        return buffer
-    }
-
-    const createRefractionTexture = context => {
-        const texture = context.createTexture()
-        context.bindTexture(context.TEXTURE_2D, texture)
-
-        context.texParameteri(context.TEXTURE_2D,
-            context.TEXTURE_MIN_FILTER,
-            context.LINEAR);
-        context.texParameteri(context.TEXTURE_2D,
-            context.TEXTURE_MAG_FILTER,
-            context.LINEAR)
-        context.texParameteri(context.TEXTURE_2D,
-            context.TEXTURE_WRAP_S,
-            context.CLAMP_TO_EDGE);
-        context.texParameteri(context.TEXTURE_2D,
-            context.TEXTURE_WRAP_T,
-            context.CLAMP_TO_EDGE);
-
-        context.texImage2D(context.TEXTURE_2D,
-            0,
-            context.RGBA,
-            context.canvas.width,
-            context.canvas.height,
-            0,
-            context.RGBA,
-            context.UNSIGNED_BYTE,
-            null)
-
-        return texture
     }
 
     const createAndBindTexture = (context, content, assetName) => {
@@ -105,6 +60,78 @@ function Terrain(camera, heightMapName, assets) {
             0)
     }
 
+    const initializeRenderBuffer = context => {
+        const createFrameBuffer = context => {
+            const buffer = context.createFramebuffer()
+            context.bindFramebuffer(context.FRAMEBUFFER, buffer)
+
+            return buffer
+        }
+
+        const createRenderBuffer = context => {
+            const buffer = context.createRenderbuffer()
+            context.bindRenderbuffer(context.RENDERBUFFER, buffer)
+            context.renderbufferStorage(context.RENDERBUFFER,
+                context.DEPTH_COMPONENT16,
+                context.canvas.width,
+                context.canvas.height)
+
+            return buffer
+        }
+
+        const createRenderBufferTexture = context => {
+            const texture = context.createTexture()
+            context.bindTexture(context.TEXTURE_2D, texture)
+
+            context.texParameteri(context.TEXTURE_2D,
+                context.TEXTURE_MIN_FILTER,
+                context.LINEAR);
+            context.texParameteri(context.TEXTURE_2D,
+                context.TEXTURE_MAG_FILTER,
+                context.LINEAR)
+            context.texParameteri(context.TEXTURE_2D,
+                context.TEXTURE_WRAP_S,
+                context.CLAMP_TO_EDGE);
+            context.texParameteri(context.TEXTURE_2D,
+                context.TEXTURE_WRAP_T,
+                context.CLAMP_TO_EDGE);
+
+            context.texImage2D(context.TEXTURE_2D,
+                0,
+                context.RGBA,
+                context.canvas.width,
+                context.canvas.height,
+                0,
+                context.RGBA,
+                context.UNSIGNED_BYTE,
+                null)
+
+            return texture
+        }
+
+        const result = {
+            frameBuffer: createFrameBuffer(context),
+            renderBuffer: createRenderBuffer(context),
+            texture: createRenderBufferTexture(context)
+        }
+
+        context.framebufferTexture2D(context.FRAMEBUFFER,
+            context.COLOR_ATTACHMENT0,
+            context.TEXTURE_2D,
+            result.texture,
+            0)
+        context.framebufferRenderbuffer(context.FRAMEBUFFER,
+            context.DEPTH_ATTACHMENT,
+            context.RENDERBUFFER,
+            result.renderBuffer)
+
+        context.bindTexture(context.TEXTURE_2D, null)
+        context.bindRenderbuffer(context.RENDERBUFFER, null)
+        context.bindFramebuffer(context.FRAMEBUFFER, null)
+
+        return result
+    }
+
     this.initialize = (context, content) => {
         const heightmap = content.resources[heightMapName].content
         terrain = geometry.createTerrain(heightmap, 0.1, 1.0)
@@ -124,23 +151,8 @@ function Terrain(camera, heightMapName, assets) {
             terrain.textureCoords,
             context.ARRAY_BUFFER)
 
-        refractionFrameBuffer = createFrameBuffer(context)
-        refractionRenderBuffer = createRenderBuffer(context)
-        refractionTexture = createRefractionTexture(context)
-
-        context.framebufferTexture2D(context.FRAMEBUFFER,
-            context.COLOR_ATTACHMENT0,
-            context.TEXTURE_2D,
-            refractionTexture,
-            0)
-        context.framebufferRenderbuffer(context.FRAMEBUFFER,
-            context.DEPTH_ATTACHMENT,
-            context.RENDERBUFFER,
-            refractionRenderBuffer)
-
-        context.bindTexture(context.TEXTURE_2D, null)
-        context.bindRenderbuffer(context.RENDERBUFFER, null)
-        context.bindFramebuffer(context.FRAMEBUFFER, null)
+        refraction = initializeRenderBuffer(context)
+        reflection = initializeRenderBuffer(context)
 
         program = content.programs['terrain']
         attributes = {
@@ -193,7 +205,7 @@ function Terrain(camera, heightMapName, assets) {
         const projection = camera.getProjection(context)
         context.uniformMatrix4fv(attributes['u_projection'], false, projection)
 
-        const plane = vec4.fromValues(0.0, 1.0, 0.0, 7.5)
+        const plane = vec4.fromValues(0.0, 1.0, 0.0, waterHeight)
         context.uniform4fv(attributes['u_clipPlane'], plane)
 
         context.uniform3fv(attributes['u_lightPosition'], lightPosition)
@@ -215,7 +227,7 @@ function Terrain(camera, heightMapName, assets) {
         context.useProgram(program)
 
         context.uniform1f(attributes['u_enableClipping'], 1)
-        context.bindFramebuffer(context.FRAMEBUFFER, refractionFrameBuffer)
+        context.bindFramebuffer(context.FRAMEBUFFER, refraction.frameBuffer)
         drawScene(context, time)
         context.bindFramebuffer(context.FRAMEBUFFER, null)
     }
