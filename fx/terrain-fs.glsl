@@ -9,14 +9,14 @@ uniform vec3 u_lightPosition;
 uniform vec3 u_ambientLight;
 uniform mat4 u_worldInverseTranspose;
 uniform mat4 u_world;
-uniform bool u_enableClipping;
+uniform bool u_enableRefractionClipping;
 
 uniform sampler2D u_sand_texture;
 uniform sampler2D u_grass_texture;
 uniform sampler2D u_rock_texture;
 uniform sampler2D u_snow_texture;
 
-varying float v_clipDist;
+varying float v_refractionClipDist;
 
 vec3 lightWeight = vec3(1.0); // TODO: move out from shader
 vec3 ambientCoefficient = vec3(0.45); // TODO: move out from shader
@@ -28,7 +28,7 @@ vec4 calculateSurfaceColor(sampler2D sampler, vec2 texcoord, float weight) {
 }
 
 void main() {
-    if (v_clipDist > 0.0 && u_enableClipping)
+    if (v_refractionClipDist > 0.0 && u_enableRefractionClipping)
         discard;
 
     vec3 worldNormal = normalize(mat3(u_worldInverseTranspose)*v_normal);

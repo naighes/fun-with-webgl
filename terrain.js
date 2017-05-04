@@ -4,7 +4,7 @@ const vec4 = glmatrix.vec4
 const mat4 = glmatrix.mat4
 const geometry = require('./geometry')
 
-function Terrain(camera, heightMapName, assets) {
+function Terrain(camera, heightMapName, assets, waterHeight) {
     let positionBuffer = null
     let indexBuffer = null
     let textureBuffer = null
@@ -18,8 +18,6 @@ function Terrain(camera, heightMapName, assets) {
     let attributes = null
     let terrain = null
     let textures = null
-
-    let waterHeight = 7.5
 
     const lightPosition = vec3.normalize(vec3.create(), vec3.fromValues(1.0, 0.3, -1.0))
     const ambientLight = vec3.fromValues(1.0, 0.549, 0.0)
@@ -162,8 +160,8 @@ function Terrain(camera, heightMapName, assets) {
             'u_projection': context.getUniformLocation(program, 'u_projection'),
             'u_lightPosition': context.getUniformLocation(program, 'u_lightPosition'),
             'u_ambientLight': context.getUniformLocation(program, 'u_ambientLight'),
-            'u_clipPlane': context.getUniformLocation(program, 'u_clipPlane'),
-            'u_enableClipping': context.getUniformLocation(program, 'u_enableClipping'),
+            'u_refractionClipPlane': context.getUniformLocation(program, 'u_refractionClipPlane'),
+            'u_enableRefractionClipping': context.getUniformLocation(program, 'u_enableRefractionClipping'),
             'a_position': context.getAttribLocation(program, 'a_position'),
             'a_texcoord': context.getAttribLocation(program, 'a_texcoord'),
             'a_normal': context.getAttribLocation(program, 'a_normal'),
@@ -205,8 +203,8 @@ function Terrain(camera, heightMapName, assets) {
         const projection = camera.getProjection(context)
         context.uniformMatrix4fv(attributes['u_projection'], false, projection)
 
-        const plane = vec4.fromValues(0.0, 1.0, 0.0, waterHeight)
-        context.uniform4fv(attributes['u_clipPlane'], plane)
+        const plane = vec4.fromValues(0.0, 1.0, 0.0, -1.0*waterHeight)
+        context.uniform4fv(attributes['u_refractionClipPlane'], plane)
 
         context.uniform3fv(attributes['u_lightPosition'], lightPosition)
         context.uniform3fv(attributes['u_ambientLight'], ambientLight)
@@ -219,14 +217,14 @@ function Terrain(camera, heightMapName, assets) {
     this.drawTerrain = (context, time) => {
         context.useProgram(program)
 
-        context.uniform1f(attributes['u_enableClipping'], 0)
+        context.uniform1f(attributes['u_enableRefractionClipping'], 0)
         drawScene(context, time)
     }
 
     this.drawRefraction = (context, time) => {
         context.useProgram(program)
 
-        context.uniform1f(attributes['u_enableClipping'], 1)
+        context.uniform1f(attributes['u_enableRefractionClipping'], 1)
         context.bindFramebuffer(context.FRAMEBUFFER, refraction.frameBuffer)
         drawScene(context, time)
         context.bindFramebuffer(context.FRAMEBUFFER, null)

@@ -83,6 +83,7 @@ function Game() {
         vec3.fromValues(0.0, 0.0, -1.0))
 
     let terrain = null
+    const waterHeight = -7.5
 
     this.initialize = context => {
         this.objects.push(camera)
@@ -100,7 +101,8 @@ function Game() {
                 grass: 'grass',
                 rock: 'rock',
                 snow: 'snow'
-            })
+            },
+            waterHeight)
         this.objects.push(terrain)
     }
 
