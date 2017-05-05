@@ -214,7 +214,7 @@ function Terrain(camera, heightMapName, assets, waterHeight) {
             vec4.fromValues(0.0, 1.0, 0.0, -1.0*waterHeight))
 
         context.uniform4fv(attributes['u_reflectionClipPlane'],
-            vec4.fromValues(0.0, 1.0, 0.0, -1.0*waterHeight))
+            vec4.fromValues(0.0, -1.0, 0.0, 1.0*waterHeight))
 
         context.uniform3fv(attributes['u_lightPosition'], lightPosition)
         context.uniform3fv(attributes['u_ambientLight'], ambientLight)
@@ -252,13 +252,23 @@ function Terrain(camera, heightMapName, assets, waterHeight) {
         drawScene(context, time)
     }
 
+    this.usingRefractionBuffer = (context, action) => {
+        context.bindFramebuffer(context.FRAMEBUFFER, refraction.frameBuffer)
+        action(context)
+        context.bindFramebuffer(context.FRAMEBUFFER, null)
+    }
+
     this.drawRefraction = (context, time) => {
         context.useProgram(program)
 
         context.uniform1f(attributes['u_enableRefractionClipping'], 1)
         context.uniform1f(attributes['u_enableReflectionClipping'], 0)
-        context.bindFramebuffer(context.FRAMEBUFFER, refraction.frameBuffer)
         drawScene(context, time)
+    }
+
+    this.usingReflectionBuffer = (context, action) => {
+        context.bindFramebuffer(context.FRAMEBUFFER, reflection.frameBuffer)
+        action(context)
         context.bindFramebuffer(context.FRAMEBUFFER, null)
     }
 
@@ -267,9 +277,7 @@ function Terrain(camera, heightMapName, assets, waterHeight) {
 
         context.uniform1f(attributes['u_enableRefractionClipping'], 0)
         context.uniform1f(attributes['u_enableReflectionClipping'], 1)
-        context.bindFramebuffer(context.FRAMEBUFFER, reflection.frameBuffer)
         drawScene(context, time)
-        context.bindFramebuffer(context.FRAMEBUFFER, null)
     }
 
     const drawScene = (context, time) => {

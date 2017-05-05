@@ -112,17 +112,23 @@ function Game() {
     }
 
     this.draw = (context, time) => {
-        context.disable(context.CULL_FACE)
+        context.enable(context.CULL_FACE);
+        context.cullFace(context.BACK);
         context.enable(context.DEPTH_TEST)
         context.depthFunc(context.LEQUAL)
         context.clearColor(0.0, 0.0, 0.0, 1.0)
         context.viewport(0, 0, context.drawingBufferWidth, context.drawingBufferHeight)
 
-        context.clear(context.COLOR_BUFFER_BIT | context.DEPTH_BUFFER_BIT)
-        terrain.drawRefraction(context, time)
+        terrain.usingRefractionBuffer(context, context => {
+            context.clear(context.COLOR_BUFFER_BIT | context.DEPTH_BUFFER_BIT)
+            terrain.drawRefraction(context, time)
+        })
 
-        context.clear(context.COLOR_BUFFER_BIT | context.DEPTH_BUFFER_BIT)
-        terrain.drawReflection(context, time)
+        terrain.usingReflectionBuffer(context, context => {
+            context.clear(context.COLOR_BUFFER_BIT | context.DEPTH_BUFFER_BIT)
+            terrain.drawReflection(context, time)
+            skybox.draw(context, time)
+        })
 
         context.clear(context.COLOR_BUFFER_BIT | context.DEPTH_BUFFER_BIT)
     }
