@@ -38,7 +38,7 @@ function Skybox(camera, size) {
         program = content.programs['skybox']
         attributes = {
             'u_view': context.getUniformLocation(program, 'u_view'),
-            'u_viewInverse': context.getUniformLocation(program, 'u_viewInverse'),
+            'u_world': context.getUniformLocation(program, 'u_world'),
             'u_projection': context.getUniformLocation(program, 'u_projection'),
             'a_position': context.getAttribLocation(program, 'a_position')
         }
@@ -83,12 +83,10 @@ function Skybox(camera, size) {
         mat4.translate(translation, translation, position)
         mat4.multiply(world, world, translation)
 
-        const view = camera.getWorldView(world)
+        const view = camera.getView()
         context.uniformMatrix4fv(attributes['u_view'], false, view)
 
-        const viewInverse = mat4.create()
-        mat4.invert(viewInverse, view)
-        context.uniformMatrix4fv(attributes['u_viewInverse'], false, viewInverse)
+        context.uniformMatrix4fv(attributes['u_world'], false, world)
 
         const projection = camera.getProjection(context)
         context.uniformMatrix4fv(attributes['u_projection'], false, projection)
