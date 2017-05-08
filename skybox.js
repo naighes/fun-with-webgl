@@ -1,9 +1,10 @@
 const glmatrix = require('gl-matrix')
 const vec3 = glmatrix.vec3
+const vec4 = glmatrix.vec4
 const mat4 = glmatrix.mat4
 const geometry = require('./geometry')
 
-function Skybox(camera, size) {
+function Skybox(camera, size, waterHeight) {
     const cube = geometry.createSkybox(size)
 
     let positionBuffer = null
@@ -38,9 +39,12 @@ function Skybox(camera, size) {
         program = content.programs['skybox']
         attributes = {
             'u_view': context.getUniformLocation(program, 'u_view'),
+            'u_reflection_view': context.getUniformLocation(program, 'u_reflection_view'),
             'u_world': context.getUniformLocation(program, 'u_world'),
             'u_projection': context.getUniformLocation(program, 'u_projection'),
-            'a_position': context.getAttribLocation(program, 'a_position')
+            'a_position': context.getAttribLocation(program, 'a_position'),
+            'u_reflectionClipPlane': context.getUniformLocation(program, 'u_reflectionClipPlane'),
+            'u_enableReflectionClipping': context.getUniformLocation(program, 'u_enableReflectionClipping')
         }
 
         texture = createAndBindTexture(context, content)
@@ -83,18 +87,66 @@ function Skybox(camera, size) {
         mat4.translate(translation, translation, position)
         mat4.multiply(world, world, translation)
 
-        const view = camera.getView()
-        context.uniformMatrix4fv(attributes['u_view'], false, view)
+        context.uniformMatrix4fv(attributes['u_view'],
+            false,
+            camera.getView())
 
-        context.uniformMatrix4fv(attributes['u_world'], false, world)
+        context.uniformMatrix4fv(attributes['u_reflection_view'],
+            false,
+            getReflectionView())
 
-        const projection = camera.getProjection(context)
-        context.uniformMatrix4fv(attributes['u_projection'], false, projection)
+        context.uniformMatrix4fv(attributes['u_world'],
+            false,
+            world)
+
+        context.uniformMatrix4fv(attributes['u_projection'],
+            false,
+            camera.getProjection(context))
+
+        context.uniform4fv(attributes['u_reflectionClipPlane'],
+            vec4.fromValues(0.0, -1.0, 0.0, 1.0*waterHeight))
+    }
+
+    const getReflectionView = () => {
+        const position = camera.getPosition()
+        position[1] = -1.0*position[1]+waterHeight*2.0
+
+        const target = camera.getTarget()
+        target[1] = -1.0*target[1]+waterHeight*2.0
+
+        const right = vec3.transformMat4(vec3.create(),
+            vec3.fromValues(1.0, 0.0, 0.0),
+            camera.getRotation())
+        let up = vec3.cross(vec3.create(),
+            right,
+            vec3.subtract(vec3.create(), target, position))
+        vec3.normalize(up, up)
+
+        return mat4.lookAt(mat4.create(),
+            position,
+            target,
+            up)
     }
 
     this.draw = (context, time) => {
+        this.drawSkybox(context, time)
+    }
+
+    this.drawSkybox = (context, time) => {
         context.useProgram(program)
 
+        context.uniform1f(attributes['u_enableReflectionClipping'], 0)
+        drawScene(context, time)
+    }
+
+    this.drawReflection = (context, time) => {
+        context.useProgram(program)
+
+        context.uniform1f(attributes['u_enableReflectionClipping'], 1)
+        drawScene(context, time)
+    }
+
+    const drawScene = (context, time) => {
         // HACK: keeping CULL_FACE disabled (it
         // prevents skybox rendering)
         context.disable(context.CULL_FACE)

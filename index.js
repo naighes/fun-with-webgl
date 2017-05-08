@@ -88,7 +88,7 @@ function Game() {
 
     this.initialize = context => {
         this.objects.push(camera)
-        skybox = new Skybox(camera, 1.0)
+        skybox = new Skybox(camera, 1.0, waterHeight)
         this.objects.push(skybox)
         this.objects.push(new ColoredCube(camera,
             0.5,
@@ -126,8 +126,8 @@ function Game() {
 
         terrain.usingReflectionBuffer(context, context => {
             context.clear(context.COLOR_BUFFER_BIT | context.DEPTH_BUFFER_BIT)
-            terrain.drawReflection(context, time)
             skybox.draw(context, time)
+            terrain.drawReflection(context, time)
         })
 
         context.clear(context.COLOR_BUFFER_BIT | context.DEPTH_BUFFER_BIT)
