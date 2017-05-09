@@ -7,6 +7,7 @@ const ColoredCube = require('./colored-cube')
 const TexturedCube = require('./textured-cube')
 const Terrain = require('./terrain')
 const Skybox = require('./skybox')
+const Water = require('./water')
 
 window.onload = () => {
     wgl('view', new Game())
@@ -21,7 +22,8 @@ function Game() {
             'textured-cube': { vs: 'fx/textured-cube-vs.glsl', fs: 'fx/textured-cube-fs.glsl' },
             'colored-triangle': { vs: 'fx/colored-triangle-vs.glsl', fs: 'fx/colored-triangle-fs.glsl' },
             'terrain': { vs: 'fx/terrain-vs.glsl', fs: 'fx/terrain-fs.glsl' },
-            'skybox': { vs: 'fx/skybox-vs.glsl', fs: 'fx/skybox-fs.glsl' }
+            'skybox': { vs: 'fx/skybox-vs.glsl', fs: 'fx/skybox-fs.glsl' },
+            'water': { vs: 'fx/water-vs.glsl', fs: 'fx/water-fs.glsl' }
         },
         resources: {
             'metal-box': {
@@ -84,7 +86,7 @@ function Game() {
 
     let terrain = null
     let skybox = null
-    const waterHeight = -7.5
+    const waterHeight = -0.5
 
     this.initialize = context => {
         this.objects.push(camera)
@@ -105,6 +107,7 @@ function Game() {
                 snow: 'snow'
             },
             waterHeight)
+        this.objects.push(new Water(camera, terrain))
         this.objects.push(terrain)
     }
 

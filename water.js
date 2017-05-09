@@ -1,0 +1,117 @@
+const glmatrix = require('gl-matrix')
+const vec3 = glmatrix.vec3
+const mat4 = glmatrix.mat4
+
+function Water(camera, terrain) {
+    let attributes = null
+    let positionBuffer = null
+    let program = null
+
+    const createBuffer = (context, data) => {
+        const buffer = context.createBuffer()
+        context.bindBuffer(context.ARRAY_BUFFER, buffer)
+        context.bufferData(context.ARRAY_BUFFER, data, context.STATIC_DRAW)
+
+        return buffer
+    }
+
+    const sendData = (context, buffer, size, name) => {
+        context.bindBuffer(context.ARRAY_BUFFER, buffer)
+
+        const attribute = attributes[name]
+        context.enableVertexAttribArray(attribute)
+
+        context.vertexAttribPointer(attribute,
+            size,
+            context.FLOAT,
+            false,
+            0,
+            0)
+    }
+
+    const getVertices = (content) => {
+        const h = terrain.getWaterHeight()
+        const w = terrain.getWidth(content)
+        const l = terrain.getLength(content)
+        return [0.0, h,  0.0  ,
+                w  , h, -1.0*l,
+                0.0, h, -1.0*l,
+                0.0, h,  0.0  ,
+                w  , h,  0.0  ,
+                w  , h, -1.0*l]
+    }
+
+    this.initialize = (context, content) => {
+        positionBuffer = createBuffer(context, new Float32Array(getVertices(content)))
+        program = content.programs['water']
+        attributes = {
+            'u_world': context.getUniformLocation(program, 'u_world'),
+            'u_worldViewProjection': context.getUniformLocation(program, 'u_worldViewProjection'),
+            'u_view': context.getUniformLocation(program, 'u_view'),
+            'u_reflection_view': context.getUniformLocation(program, 'u_reflection_view'),
+            'u_projection': context.getUniformLocation(program, 'u_projection'),
+            'a_position': context.getAttribLocation(program, 'a_position'),
+            'a_texcoord': context.getAttribLocation(program, 'a_texcoord'),
+            'u_texture': context.getUniformLocation(program, 'u_texture')
+        }
+    }
+
+    this.update = (context, time) => {
+        context.useProgram(program)
+
+        const world = mat4.create()
+
+        context.uniformMatrix4fv(attributes['u_world'], false, world)
+        context.uniformMatrix4fv(attributes['u_worldViewProjection'], false, camera.getWorldViewProjection(context, world))
+
+        context.uniformMatrix4fv(attributes['u_view'],
+            false,
+            camera.getView())
+
+        context.uniformMatrix4fv(attributes['u_reflection_view'],
+            false,
+            getReflectionView())
+
+        context.uniformMatrix4fv(attributes['u_projection'],
+            false,
+            camera.getProjection(context))
+    }
+
+    const getReflectionView = () => {
+        const waterHeight = terrain.getWaterHeight()
+        const position = camera.getPosition()
+        position[1] = -1.0*position[1]+waterHeight*2.0
+        const target = camera.getTarget()
+        target[1] = -1.0*target[1]+waterHeight*2.0
+
+        const right = vec3.transformMat4(vec3.create(),
+            vec3.fromValues(1.0, 0.0, 0.0),
+            camera.getRotation())
+        let up = vec3.cross(vec3.create(),
+            right,
+            vec3.subtract(vec3.create(), target, position))
+        vec3.normalize(up, up)
+
+        return mat4.lookAt(mat4.create(),
+            position,
+            target,
+            up)
+    }
+
+    this.draw = (context, time) => {
+        context.useProgram(program)
+
+        sendData(context, positionBuffer, 3, 'a_position')
+
+        context.uniform1i(attributes['u_texture'], 0)
+        context.activeTexture(context.TEXTURE0)
+        context.bindTexture(context.TEXTURE_2D,
+            terrain.getReflectionTexture())
+
+        context.drawArrays(context.TRIANGLE_STRIP,
+            0,
+            6)
+    }
+}
+
+module.exports = Water

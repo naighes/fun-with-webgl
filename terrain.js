@@ -130,9 +130,24 @@ function Terrain(camera, heightMapName, assets, waterHeight) {
         return result
     }
 
+    this.getWaterHeight = () => waterHeight
+
+    this.getWidth = content => content.resources[heightMapName]
+        .content
+        .getWidth()*sizeFactor
+
+    this.getLength = content => content.resources[heightMapName]
+        .content
+        .getHeight()*sizeFactor
+
+    const sizeFactor = 1.0
+    const heightFactor = 0.1
+
     this.initialize = (context, content) => {
         const heightmap = content.resources[heightMapName].content
-        terrain = geometry.createTerrain(heightmap, 0.1, 1.0)
+        terrain = geometry.createTerrain(heightmap,
+            heightFactor,
+            sizeFactor)
         positionBuffer = createBuffer(context,
             terrain.vertices,
             context.ARRAY_BUFFER)
@@ -279,6 +294,10 @@ function Terrain(camera, heightMapName, assets, waterHeight) {
         context.uniform1f(attributes['u_enableReflectionClipping'], 1)
         drawScene(context, time)
     }
+
+    this.getRefractionTexture = () => refraction.texture
+
+    this.getReflectionTexture = () => reflection.texture
 
     const drawScene = (context, time) => {
         sendData(context, positionBuffer, 3, 'a_position')
