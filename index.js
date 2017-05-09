@@ -13,10 +13,27 @@ window.onload = () => {
     wgl('view', new Game())
 }
 
-function Environment(lightPosition, ambientLight, waterHeight) {
+function Heightmap(assetName,
+    sizeFactor,
+    heightFactor,
+    textures) {
+    this.getAssetName = () => assetName
+    this.getSizeFactor = () => sizeFactor
+    this.getHeightFactor = () => heightFactor
+    this.getTextures = () => textures
+    this.getPng = content => content.resources[this.getAssetName()].content
+    this.getWidth = content => this.getPng(content).getWidth()*this.getSizeFactor()
+    this.getHeight = content => this.getPng(content).getHeight()*this.getSizeFactor()
+}
+
+function Environment(lightPosition,
+    ambientLight,
+    waterHeight,
+    heightmap) {
     this.getLightPosition = () => lightPosition
     this.getAmbientLight = () => ambientLight
     this.getWaterHeight = () => waterHeight
+    this.getHeightmap = () => heightmap
 }
 
 function Game() {
@@ -96,7 +113,15 @@ function Game() {
 
     const environment = new Environment(vec3.normalize(vec3.create(), vec3.fromValues(1.0, 0.3, -1.0)),
         vec3.fromValues(1.0, 0.549, 0.0),
-        -5.5)
+        -5.5,
+        new Heightmap('heightmap',
+            1.0,
+            0.1, {
+                sand: 'sand',
+                grass: 'grass',
+                rock: 'rock',
+                snow: 'snow'
+            }))
 
     let terrain = null
     let skybox = null
@@ -114,14 +139,7 @@ function Game() {
             1.3,
             vec3.fromValues(0.55, -0.8, -2.0),
             'metal-box'))
-        terrain = new Terrain(camera,
-            environment,
-            'heightmap', {
-                sand: 'sand',
-                grass: 'grass',
-                rock: 'rock',
-                snow: 'snow'
-            })
+        terrain = new Terrain(camera, environment)
         this.objects.push(new Water(camera,
             environment,
             terrain,

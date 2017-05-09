@@ -4,7 +4,7 @@ const vec4 = glmatrix.vec4
 const mat4 = glmatrix.mat4
 const geometry = require('./geometry')
 
-function Terrain(camera, environment, heightMapName, assets) {
+function Terrain(camera, environment) {
     let positionBuffer = null
     let indexBuffer = null
     let textureBuffer = null
@@ -127,22 +127,17 @@ function Terrain(camera, environment, heightMapName, assets) {
         return result
     }
 
-    this.getWidth = content => content.resources[heightMapName]
-        .content
-        .getWidth()*sizeFactor
+    const getHeightmap = (content, environment) => environment.getHeightmap().getPng(content)
 
-    this.getLength = content => content.resources[heightMapName]
-        .content
-        .getHeight()*sizeFactor
+    this.getWidth = (content , environment) => environment.getHeightmap().getWidth(content)
 
-    const sizeFactor = 1.0
-    const heightFactor = 0.1
+    this.getLength = (content , environment) => environment.getHeightmap().getHeight(content)
 
     this.initialize = (context, content) => {
-        const heightmap = content.resources[heightMapName].content
+        const heightmap = getHeightmap(content, environment)
         terrain = geometry.createTerrain(heightmap,
-            heightFactor,
-            sizeFactor)
+            environment.getHeightmap().getHeightFactor(),
+            environment.getHeightmap().getSizeFactor())
         positionBuffer = createBuffer(context,
             terrain.vertices,
             context.ARRAY_BUFFER)
@@ -180,6 +175,8 @@ function Terrain(camera, environment, heightMapName, assets) {
             'a_normal': context.getAttribLocation(program, 'a_normal'),
             'a_weight': context.getAttribLocation(program, 'a_weight')
         }
+
+        const assets = environment.getHeightmap().getTextures()
 
         textures = [{
             texture: createAndBindTexture(context, content, assets.sand),
