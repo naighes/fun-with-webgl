@@ -65,7 +65,9 @@ function Water(camera, terrain, assetName) {
             'a_position': context.getAttribLocation(program, 'a_position'),
             'a_texcoord': context.getAttribLocation(program, 'a_texcoord'),
             'u_reflection_texture': context.getUniformLocation(program, 'u_reflection_texture'),
-            'u_waves_texture': context.getUniformLocation(program, 'u_waves_texture')
+            'u_refraction_texture': context.getUniformLocation(program, 'u_refraction_texture'),
+            'u_waves_texture': context.getUniformLocation(program, 'u_waves_texture'),
+            'u_camera_position': context.getUniformLocation(program, 'u_camera_position')
         }
 
         texture = createAndBindTexture(context, content, assetName)
@@ -104,6 +106,9 @@ function Water(camera, terrain, assetName) {
         context.uniformMatrix4fv(attributes['u_projection'],
             false,
             camera.getProjection(context))
+
+        context.uniform3fv(attributes['u_camera_position'],
+            camera.getPosition())
     }
 
     const getReflectionView = () => {
@@ -138,8 +143,13 @@ function Water(camera, terrain, assetName) {
         context.bindTexture(context.TEXTURE_2D,
             terrain.getReflectionTexture())
 
-        context.uniform1i(attributes['u_waves_texture'], 1)
+        context.uniform1i(attributes['u_refraction_texture'], 1)
         context.activeTexture(context.TEXTURE1)
+        context.bindTexture(context.TEXTURE_2D,
+            terrain.getRefractionTexture())
+
+        context.uniform1i(attributes['u_waves_texture'], 2)
+        context.activeTexture(context.TEXTURE2)
         context.bindTexture(context.TEXTURE_2D, texture)
 
         context.drawArrays(context.TRIANGLE_STRIP,
