@@ -30,6 +30,10 @@ function Game() {
                 src: 'img/metal_box.jpg',
                 type: 'img'
             },
+            'water-bump-map': {
+                src: 'img/water_bump_map.png',
+                type: 'img'
+            },
             'sand': {
                 src: 'img/sand.jpg',
                 type: 'img'
@@ -107,7 +111,7 @@ function Game() {
                 snow: 'snow'
             },
             waterHeight)
-        this.objects.push(new Water(camera, terrain))
+        this.objects.push(new Water(camera, terrain, 'water-bump-map'))
         this.objects.push(terrain)
     }
 

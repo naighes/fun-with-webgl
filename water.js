@@ -2,10 +2,12 @@ const glmatrix = require('gl-matrix')
 const vec3 = glmatrix.vec3
 const mat4 = glmatrix.mat4
 
-function Water(camera, terrain) {
+function Water(camera, terrain, assetName) {
     let attributes = null
     let positionBuffer = null
+    let textureBuffer = null
     let program = null
+    let texture = null
 
     const createBuffer = (context, data) => {
         const buffer = context.createBuffer()
@@ -29,6 +31,15 @@ function Water(camera, terrain) {
             0)
     }
 
+    const getTextureCoords = () => {
+        return [0.0, 1.0,
+                1.0, 0.0,
+                0.0, 0.0,
+                0.0, 1.0,
+                1.0, 1.0,
+                1.0, 0.0]
+    }
+
     const getVertices = (content) => {
         const h = terrain.getWaterHeight()
         const w = terrain.getWidth(content)
@@ -43,6 +54,7 @@ function Water(camera, terrain) {
 
     this.initialize = (context, content) => {
         positionBuffer = createBuffer(context, new Float32Array(getVertices(content)))
+        textureBuffer = createBuffer(context, new Float32Array(getTextureCoords()))
         program = content.programs['water']
         attributes = {
             'u_world': context.getUniformLocation(program, 'u_world'),
@@ -52,8 +64,25 @@ function Water(camera, terrain) {
             'u_projection': context.getUniformLocation(program, 'u_projection'),
             'a_position': context.getAttribLocation(program, 'a_position'),
             'a_texcoord': context.getAttribLocation(program, 'a_texcoord'),
-            'u_texture': context.getUniformLocation(program, 'u_texture')
+            'u_reflection_texture': context.getUniformLocation(program, 'u_reflection_texture'),
+            'u_waves_texture': context.getUniformLocation(program, 'u_waves_texture')
         }
+
+        texture = createAndBindTexture(context, content, assetName)
+    }
+
+    const createAndBindTexture = (context, content, assetName) => {
+        const texture = context.createTexture()
+        context.bindTexture(context.TEXTURE_2D, texture)
+        context.texImage2D(context.TEXTURE_2D,
+            0,
+            context.RGBA,
+            context.RGBA,
+            context.UNSIGNED_BYTE,
+            content.resources[assetName].content)
+        context.generateMipmap(context.TEXTURE_2D)
+
+        return texture
     }
 
     this.update = (context, time) => {
@@ -102,11 +131,16 @@ function Water(camera, terrain) {
         context.useProgram(program)
 
         sendData(context, positionBuffer, 3, 'a_position')
+        sendData(context, textureBuffer, 2, 'a_texcoord')
 
-        context.uniform1i(attributes['u_texture'], 0)
+        context.uniform1i(attributes['u_reflection_texture'], 0)
         context.activeTexture(context.TEXTURE0)
         context.bindTexture(context.TEXTURE_2D,
             terrain.getReflectionTexture())
+
+        context.uniform1i(attributes['u_waves_texture'], 1)
+        context.activeTexture(context.TEXTURE1)
+        context.bindTexture(context.TEXTURE_2D, texture)
 
         context.drawArrays(context.TRIANGLE_STRIP,
             0,
