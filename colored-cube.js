@@ -3,7 +3,7 @@ const vec3 = glmatrix.vec3
 const mat4 = glmatrix.mat4
 const geometry = require('./geometry')
 
-function ColoredCube(camera, size, position) {
+function ColoredCube(camera, environment, size, position) {
     const cube = geometry.createCube(size)
 
     const r = [1.0, 0.0, 0.0, 1.0],
@@ -17,8 +17,6 @@ function ColoredCube(camera, size, position) {
                              w, b, r, g, r, b,
                              g, b, w, r, w, b,
                              w, b, g, b, w, r)
-
-    const lightPosition = vec3.fromValues(20.0, 30.0, 50.0)
 
     let positionBuffer = null
     let colorBuffer = null
@@ -93,7 +91,7 @@ function ColoredCube(camera, size, position) {
         context.uniformMatrix4fv(attributes['u_world'], false, world)
         context.uniformMatrix4fv(attributes['u_worldInverseTranspose'], false, world)
         context.uniformMatrix4fv(attributes['u_worldViewProjection'], false, camera.getWorldViewProjection(context, world))
-        context.uniform3fv(attributes['u_lightWorldPosition'], lightPosition)
+        context.uniform3fv(attributes['u_lightWorldPosition'], environment.lightPosition)
     }
 
     this.draw = (context, time) => {

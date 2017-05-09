@@ -4,7 +4,7 @@ const vec4 = glmatrix.vec4
 const mat4 = glmatrix.mat4
 const geometry = require('./geometry')
 
-function Skybox(camera, size, waterHeight) {
+function Skybox(camera, size, environment) {
     const cube = geometry.createSkybox(size)
 
     let positionBuffer = null
@@ -104,15 +104,16 @@ function Skybox(camera, size, waterHeight) {
             camera.getProjection(context))
 
         context.uniform4fv(attributes['u_reflectionClipPlane'],
-            vec4.fromValues(0.0, -1.0, 0.0, 1.0*waterHeight))
+            vec4.fromValues(0.0, -1.0, 0.0, 1.0*environment.waterHeight))
     }
 
     const getReflectionView = () => {
+        const wh = environment.waterHeight
         const position = camera.getPosition()
-        position[1] = -1.0*position[1]+waterHeight*2.0
+        position[1] = -1.0*position[1]+wh*2.0
 
         const target = camera.getTarget()
-        target[1] = -1.0*target[1]+waterHeight*2.0
+        target[1] = -1.0*target[1]+wh*2.0
 
         const right = vec3.transformMat4(vec3.create(),
             vec3.fromValues(1.0, 0.0, 0.0),

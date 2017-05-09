@@ -51,7 +51,7 @@ function Game() {
                 type: 'img'
             },
             'heightmap': {
-                src: 'img/heightmap_2.png',
+                src: 'img/heightmap_4.png',
                 type: 'heightmap'
             },
             'skybox_xn': {
@@ -88,30 +88,40 @@ function Game() {
     const camera = new Camera(vec3.fromValues(30.0, 10.0, -50.0),
         vec3.fromValues(0.0, 0.0, -51.0))
 
+    const environment = {
+        lightPosition: vec3.normalize(vec3.create(), vec3.fromValues(1.0, 0.3, -1.0)),
+        ambientLight: vec3.fromValues(1.0, 0.549, 0.0),
+        waterHeight: -5.5
+    }
+
     let terrain = null
     let skybox = null
-    const waterHeight = -5.5
 
     this.initialize = context => {
         this.objects.push(camera)
-        skybox = new Skybox(camera, 1.0, waterHeight)
+        skybox = new Skybox(camera, 1.0, environment)
         this.objects.push(skybox)
         this.objects.push(new ColoredCube(camera,
+            environment,
             0.5,
             vec3.fromValues(0.0, 0.0, -1.0)))
         this.objects.push(new TexturedCube(camera,
+            environment,
             1.3,
             vec3.fromValues(0.55, -0.8, -2.0),
             'metal-box'))
         terrain = new Terrain(camera,
+            environment,
             'heightmap', {
                 sand: 'sand',
                 grass: 'grass',
                 rock: 'rock',
                 snow: 'snow'
-            },
-            waterHeight)
-        this.objects.push(new Water(camera, terrain, 'water-bump-map'))
+            })
+        this.objects.push(new Water(camera,
+            environment,
+            terrain,
+            'water-bump-map'))
         this.objects.push(terrain)
     }
 

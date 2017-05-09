@@ -2,7 +2,7 @@ const glmatrix = require('gl-matrix')
 const vec3 = glmatrix.vec3
 const mat4 = glmatrix.mat4
 
-function Water(camera, terrain, assetName) {
+function Water(camera, environment, terrain, assetName) {
     let attributes = null
     let positionBuffer = null
     let textureBuffer = null
@@ -41,7 +41,7 @@ function Water(camera, terrain, assetName) {
     }
 
     const getVertices = (content) => {
-        const h = terrain.getWaterHeight()
+        const h = environment.waterHeight
         const w = terrain.getWidth(content)
         const l = terrain.getLength(content)
         return [0.0, h,  0.0  ,
@@ -116,11 +116,11 @@ function Water(camera, terrain, assetName) {
     }
 
     const getReflectionView = () => {
-        const waterHeight = terrain.getWaterHeight()
+        const wh = environment.waterHeight
         const position = camera.getPosition()
-        position[1] = -1.0*position[1]+waterHeight*2.0
+        position[1] = -1.0*position[1]+wh*2.0
         const target = camera.getTarget()
-        target[1] = -1.0*target[1]+waterHeight*2.0
+        target[1] = -1.0*target[1]+wh*2.0
 
         const right = vec3.transformMat4(vec3.create(),
             vec3.fromValues(1.0, 0.0, 0.0),

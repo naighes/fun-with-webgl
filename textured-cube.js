@@ -3,9 +3,8 @@ const vec3 = glmatrix.vec3
 const mat4 = glmatrix.mat4
 const geometry = require('./geometry')
 
-function TexturedCube(camera, size, position, assetName) {
+function TexturedCube(camera, environment, size, position, assetName) {
     const cube = geometry.createCube(size)
-    const lightPosition = vec3.fromValues(20.0, 30.0, 50.0)
 
     let positionBuffer = null
     let textureBuffer = null
@@ -98,7 +97,7 @@ function TexturedCube(camera, size, position, assetName) {
         context.uniformMatrix4fv(attributes['u_world'], false, world)
         context.uniformMatrix4fv(attributes['u_worldInverseTranspose'], false, world)
         context.uniformMatrix4fv(attributes['u_worldViewProjection'], false, camera.getWorldViewProjection(context, world))
-        context.uniform3fv(attributes['u_lightWorldPosition'], lightPosition)
+        context.uniform3fv(attributes['u_lightWorldPosition'], environment.lightPosition)
     }
 
     this.draw = (context, time) => {
