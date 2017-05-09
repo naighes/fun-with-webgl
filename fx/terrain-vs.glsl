@@ -18,6 +18,7 @@ varying vec4 v_position;
 varying vec2 v_texcoord;
 varying vec3 v_normal;
 varying vec4 v_weight;
+varying float v_depth;
 varying float v_refractionClipDist;
 varying float v_reflectionClipDist;
 
@@ -38,5 +39,7 @@ void main() {
     v_texcoord = a_texcoord;
     v_normal = a_normal;
     v_weight = a_weight;
+
+    v_depth = gl_Position.z/gl_Position.w;
 }
 

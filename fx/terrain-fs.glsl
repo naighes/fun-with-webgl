@@ -20,6 +20,8 @@ uniform sampler2D u_snow_texture;
 varying float v_refractionClipDist;
 varying float v_reflectionClipDist;
 
+varying float v_depth;
+
 vec3 lightWeight = vec3(1.0); // TODO: move out from shader
 vec3 ambientCoefficient = vec3(0.45); // TODO: move out from shader
 
@@ -42,12 +44,27 @@ void main() {
     vec3 surfaceToLight = normalize(u_lightPosition-model.xyz);
     float diffuseCoefficient = max(0.0, dot(worldNormal, surfaceToLight));
 
-    vec4 sand = calculateSurfaceColor(u_sand_texture, v_texcoord, v_weight.x);
-    vec4 grass = calculateSurfaceColor(u_grass_texture, v_texcoord, v_weight.y);
-    vec4 rock = calculateSurfaceColor(u_rock_texture, v_texcoord, v_weight.z);
-    vec4 snow = calculateSurfaceColor(u_snow_texture, v_texcoord, v_weight.w);
+    vec4 f_sand = calculateSurfaceColor(u_sand_texture, v_texcoord, v_weight.x);
+    vec4 f_grass = calculateSurfaceColor(u_grass_texture, v_texcoord, v_weight.y);
+    vec4 f_rock = calculateSurfaceColor(u_rock_texture, v_texcoord, v_weight.z);
+    vec4 f_snow = calculateSurfaceColor(u_snow_texture, v_texcoord, v_weight.w);
 
-    vec4 surfaceColor = sand+grass+rock+snow;
+    vec4 farColor = f_sand+f_grass+f_rock+f_snow;
+
+    vec2 nearTextureCoords = v_texcoord*3.0;
+
+    vec4 n_sand = calculateSurfaceColor(u_sand_texture, nearTextureCoords, v_weight.x);
+    vec4 n_grass = calculateSurfaceColor(u_grass_texture, nearTextureCoords, v_weight.y);
+    vec4 n_rock = calculateSurfaceColor(u_rock_texture, nearTextureCoords, v_weight.z);
+    vec4 n_snow = calculateSurfaceColor(u_snow_texture, nearTextureCoords, v_weight.w);
+
+    vec4 nearColor = n_sand+n_grass+n_rock+n_snow;
+
+    float blendDistance = 0.99;
+    float blendWidth = 0.005;
+    float blendFactor = clamp((v_depth-blendDistance)/blendWidth, 0.0, 1.0);
+
+    vec4 surfaceColor = mix(nearColor, farColor, blendFactor);
 
     vec3 ambient = ambientCoefficient*surfaceColor.rgb*lightWeight;
     vec3 diffuse = diffuseCoefficient*surfaceColor.rgb*lightWeight;

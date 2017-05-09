@@ -90,7 +90,7 @@ function Game() {
 
     let terrain = null
     let skybox = null
-    const waterHeight = -0.5
+    const waterHeight = -5.5
 
     this.initialize = context => {
         this.objects.push(camera)
