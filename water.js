@@ -67,7 +67,8 @@ function Water(camera, terrain, assetName) {
             'u_reflection_texture': context.getUniformLocation(program, 'u_reflection_texture'),
             'u_refraction_texture': context.getUniformLocation(program, 'u_refraction_texture'),
             'u_waves_texture': context.getUniformLocation(program, 'u_waves_texture'),
-            'u_camera_position': context.getUniformLocation(program, 'u_camera_position')
+            'u_camera_position': context.getUniformLocation(program, 'u_camera_position'),
+            'u_time': context.getUniformLocation(program, 'u_time')
         }
 
         texture = createAndBindTexture(context, content, assetName)
@@ -109,6 +110,9 @@ function Water(camera, terrain, assetName) {
 
         context.uniform3fv(attributes['u_camera_position'],
             camera.getPosition())
+
+        context.uniform1f(attributes['u_time'],
+            time.totalGameTime)
     }
 
     const getReflectionView = () => {

@@ -11,14 +11,14 @@ uniform sampler2D u_waves_texture;
 uniform vec3 u_camera_position;
 
 void main() {
-    float u_wave_height = 0.3; // TODO: do not hardcode
+    float wave_height = 0.3; // TODO: do not hardcode
     float refl_x = v_reflection_map_sampling_pos.x/v_reflection_map_sampling_pos.w/2.0+0.5;
     float refl_y = v_reflection_map_sampling_pos.y/v_reflection_map_sampling_pos.w/2.0+0.5;
 
     vec2 projectedTexCoords = vec2(refl_x, refl_y);
 
     vec4 bumpColor = texture2D(u_waves_texture, v_bump_map_sampling_pos);
-    vec2 perturbation = u_wave_height*(bumpColor.xy-0.5)*2.0;
+    vec2 perturbation = wave_height*(bumpColor.xy-0.5)*2.0;
     vec2 perturbatedTexCoords = projectedTexCoords+perturbation;
     vec4 reflectiveColor = texture2D(u_reflection_texture, perturbatedTexCoords);
 
