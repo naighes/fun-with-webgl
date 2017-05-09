@@ -41,7 +41,7 @@ function Water(camera, environment, terrain, assetName) {
     }
 
     const getVertices = (content) => {
-        const h = environment.waterHeight
+        const h = environment.getWaterHeight()
         const w = terrain.getWidth(content)
         const l = terrain.getLength(content)
         return [0.0, h,  0.0  ,
@@ -116,7 +116,7 @@ function Water(camera, environment, terrain, assetName) {
     }
 
     const getReflectionView = () => {
-        const wh = environment.waterHeight
+        const wh = environment.getWaterHeight()
         const position = camera.getPosition()
         position[1] = -1.0*position[1]+wh*2.0
         const target = camera.getTarget()

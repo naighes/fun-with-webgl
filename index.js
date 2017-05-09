@@ -13,6 +13,12 @@ window.onload = () => {
     wgl('view', new Game())
 }
 
+function Environment(lightPosition, ambientLight, waterHeight) {
+    this.getLightPosition = () => lightPosition
+    this.getAmbientLight = () => ambientLight
+    this.getWaterHeight = () => waterHeight
+}
+
 function Game() {
     this.objects = []
 
@@ -88,11 +94,9 @@ function Game() {
     const camera = new Camera(vec3.fromValues(30.0, 10.0, -50.0),
         vec3.fromValues(0.0, 0.0, -51.0))
 
-    const environment = {
-        lightPosition: vec3.normalize(vec3.create(), vec3.fromValues(1.0, 0.3, -1.0)),
-        ambientLight: vec3.fromValues(1.0, 0.549, 0.0),
-        waterHeight: -5.5
-    }
+    const environment = new Environment(vec3.normalize(vec3.create(), vec3.fromValues(1.0, 0.3, -1.0)),
+        vec3.fromValues(1.0, 0.549, 0.0),
+        -5.5)
 
     let terrain = null
     let skybox = null

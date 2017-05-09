@@ -91,7 +91,7 @@ function ColoredCube(camera, environment, size, position) {
         context.uniformMatrix4fv(attributes['u_world'], false, world)
         context.uniformMatrix4fv(attributes['u_worldInverseTranspose'], false, world)
         context.uniformMatrix4fv(attributes['u_worldViewProjection'], false, camera.getWorldViewProjection(context, world))
-        context.uniform3fv(attributes['u_lightWorldPosition'], environment.lightPosition)
+        context.uniform3fv(attributes['u_lightWorldPosition'], environment.getLightPosition())
     }
 
     this.draw = (context, time) => {
