@@ -217,18 +217,20 @@ function Terrain(camera, environment) {
             false,
             camera.getProjection(context))
 
+        const wh = environment.getHeightmap().getWaterHeight()
+
         context.uniform4fv(attributes['u_refractionClipPlane'],
-            vec4.fromValues(0.0, 1.0, 0.0, -1.0*environment.getWaterHeight()))
+            vec4.fromValues(0.0, 1.0, 0.0, -1.0*wh))
 
         context.uniform4fv(attributes['u_reflectionClipPlane'],
-            vec4.fromValues(0.0, -1.0, 0.0, 1.0*environment.getWaterHeight()))
+            vec4.fromValues(0.0, -1.0, 0.0, 1.0*wh))
 
         context.uniform3fv(attributes['u_lightPosition'], environment.getLightPosition())
         context.uniform3fv(attributes['u_ambientLight'], environment.getAmbientLight())
     }
 
     const getReflectionView = () => {
-        const wh = environment.getWaterHeight()
+        const wh = environment.getHeightmap().getWaterHeight()
         const position = camera.getPosition()
         position[1] = -1.0*position[1]+wh*2.0
         const target = camera.getTarget()

@@ -16,6 +16,7 @@ window.onload = () => {
 function Heightmap(assetName,
     sizeFactor,
     heightFactor,
+    waterHeight,
     textures) {
     this.getAssetName = () => assetName
     this.getSizeFactor = () => sizeFactor
@@ -24,15 +25,14 @@ function Heightmap(assetName,
     this.getPng = content => content.resources[this.getAssetName()].content
     this.getWidth = content => this.getPng(content).getWidth()*this.getSizeFactor()
     this.getHeight = content => this.getPng(content).getHeight()*this.getSizeFactor()
+    this.getWaterHeight = () => waterHeight*this.getHeightFactor()
 }
 
 function Environment(lightPosition,
     ambientLight,
-    waterHeight,
     heightmap) {
     this.getLightPosition = () => lightPosition
     this.getAmbientLight = () => ambientLight
-    this.getWaterHeight = () => waterHeight
     this.getHeightmap = () => heightmap
 }
 
@@ -113,10 +113,10 @@ function Game() {
 
     const environment = new Environment(vec3.normalize(vec3.create(), vec3.fromValues(1.0, 0.3, -1.0)),
         vec3.fromValues(1.0, 0.549, 0.0),
-        -5.5,
         new Heightmap('heightmap',
             1.0,
-            0.1, {
+            0.1,
+            -55, {
                 sand: 'sand',
                 grass: 'grass',
                 rock: 'rock',
