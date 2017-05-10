@@ -50,9 +50,6 @@ function Water(camera, environment, terrain, assetName) {
                 w  , h,  0.0  ,
                 0.0, h,  0.0  ,
                 w,   h, -1.0*l]
-                /*0.0, h,  0.0  ,
-                w  , h,  0.0  ,
-                w  , h, -1.0*l*/
     }
 
     this.initialize = (context, content) => {

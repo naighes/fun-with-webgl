@@ -1,10 +1,32 @@
+<!DOCTYPE html>
 <html>
+    <head>
+        <title>WEBGL terrain rendering</title>
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+            }
+
+            canvas {
+                margin: 10px;
+                display: inline;
+            }
+
+            #canvas-container {
+                width: 100%;
+                text-align: center;
+            }
+        </style>
+    </head>
     <body>
-        <canvas
-            id="view"
-            width="800"
-            height="600"
-            style="border: none; width: 800; height: 600"></canvas>
+        <div id="canvas-container">
+            <canvas
+                id="view"
+                width="800"
+                height="600"
+                style="border: none"></canvas>
+        </div>
         <script src="bundle.js" type="text/javascript"></script>
     </body>
 </html>

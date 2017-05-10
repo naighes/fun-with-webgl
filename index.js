@@ -10,6 +10,16 @@ const Skybox = require('./skybox')
 const Water = require('./water')
 
 window.onload = () => {
+    const canvas = document.getElementById('view')
+    document.getElementById('btn')
+        .onclick = e => {
+            const f = canvas.requestFullscreen ||
+                canvas.mozRequestFullScreen ||
+                canvas.webkitRequestFullscreen ||
+                canvas.msRequestFullscreen
+            f.apply(canvas, arguments)
+        }
+
     wgl('view', new Game())
 }
 
