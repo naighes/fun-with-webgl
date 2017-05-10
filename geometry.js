@@ -255,6 +255,13 @@ module.exports.createTerrain = (png, heightFactor, sizeFactor) => {
         indices: indices,
         normals: normals,
         textureCoords: textureCoords,
-        weights: weights
+        weights: weights,
+        getVertexAt: (x, y) => {
+            const i = x*3+y*png.getWidth()*3
+
+            return vec3.fromValues(vertices[i+0],
+                vertices[i+1],
+                vertices[i+2])
+        }
     }
 }

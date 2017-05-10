@@ -10,16 +10,6 @@ const Skybox = require('./skybox')
 const Water = require('./water')
 
 window.onload = () => {
-    const canvas = document.getElementById('view')
-    document.getElementById('btn')
-        .onclick = e => {
-            const f = canvas.requestFullscreen ||
-                canvas.mozRequestFullScreen ||
-                canvas.webkitRequestFullscreen ||
-                canvas.msRequestFullscreen
-            f.apply(canvas, arguments)
-        }
-
     wgl('view', new Game())
 }
 
@@ -118,7 +108,7 @@ function Game() {
                  0.0, 1.0, 0.0, 1.0,
                  0.0, 0.0, 1.0, 1.0]
 
-    const camera = new Camera(vec3.fromValues(30.0, 10.0, -50.0),
+    const camera = new Camera(vec3.fromValues(30.2, 10.0, -50.4),
         vec3.fromValues(0.0, 0.0, -51.0))
 
     const environment = new Environment(vec3.normalize(vec3.create(), vec3.fromValues(1.0, 0.3, -1.0)),

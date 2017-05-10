@@ -133,6 +133,40 @@ function Terrain(camera, environment) {
 
     this.getLength = (content , environment) => environment.getHeightmap().getHeight(content)
 
+    const getHeightAt = (x, z, heightmap, terrain) => {
+        const nx = x/heightmap.getSizeFactor()
+        const nz = z/heightmap.getSizeFactor()
+
+        const lx = Math.floor(nx)
+        const hx = lx+1.0
+        const lz = Math.floor(nz)
+        const hz = lz+1.0
+
+        const rx = (x-lx)/(hx-lx)
+        const rz = (z-lz)/(hz-lz)
+
+        const lx_lz = terrain.getVertexAt(lx, -1.0*lz)[1]
+        const lx_hz = terrain.getVertexAt(lx, -1.0*hz)[1]
+        const hx_lz = terrain.getVertexAt(hx, -1.0*lz)[1]
+        const hx_hz = terrain.getVertexAt(hx, -1.0*hz)[1]
+
+        const pointAboveTriangle = rx+rx<1
+
+        let result = 0.0
+
+        if (pointAboveTriangle) {
+            result = lx_lz
+            result += rz*(lx_hz-lx_lz)
+            result += rx*(hx_lz-lx_lz)
+        } else {
+            result = hx_hz
+            result += (1.0-rz)*(hx_lz-hx_hz)
+            result += (1.0-rx)*(lx_hz-hx_hz)
+        }
+
+        return result
+    }
+
     this.initialize = (context, content) => {
         const heightmap = getHeightmap(content, environment)
         terrain = geometry.createTerrain(heightmap,
