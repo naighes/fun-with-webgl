@@ -127,11 +127,11 @@ function Terrain(camera, environment) {
         return result
     }
 
-    const getHeightmap = (content, environment) => environment.getHeightmap().getPng(content)
+    const getHeightmap = environment => environment.getHeightmap().getPng()
 
-    this.getWidth = (content , environment) => environment.getHeightmap().getWidth(content)
+    this.getWidth = environment => environment.getHeightmap().getWidth()
 
-    this.getLength = (content , environment) => environment.getHeightmap().getHeight(content)
+    this.getLength = environment => environment.getHeightmap().getHeight()
 
     const getHeightAt = (x, z, heightmap, terrain) => {
         const nx = x/heightmap.getSizeFactor()
@@ -168,7 +168,7 @@ function Terrain(camera, environment) {
     }
 
     this.initialize = (context, content) => {
-        const heightmap = getHeightmap(content, environment)
+        const heightmap = getHeightmap(environment)
         terrain = geometry.createTerrain(heightmap,
             environment.getHeightmap().getHeightFactor(),
             environment.getHeightmap().getSizeFactor())

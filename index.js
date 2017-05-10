@@ -13,7 +13,8 @@ window.onload = () => {
     wgl('view', new Game())
 }
 
-function Heightmap(assetName,
+function Heightmap(content,
+    assetName,
     sizeFactor,
     heightFactor,
     waterHeight,
@@ -22,9 +23,9 @@ function Heightmap(assetName,
     this.getSizeFactor = () => sizeFactor
     this.getHeightFactor = () => heightFactor
     this.getTextures = () => textures
-    this.getPng = content => content.resources[this.getAssetName()].content
-    this.getWidth = content => this.getPng(content).getWidth()*this.getSizeFactor()
-    this.getHeight = content => this.getPng(content).getHeight()*this.getSizeFactor()
+    this.getPng = () => content.resources[this.getAssetName()].content
+    this.getWidth = () => this.getPng(content).getWidth()*this.getSizeFactor()
+    this.getHeight = () => this.getPng(content).getHeight()*this.getSizeFactor()
     this.getWaterHeight = () => waterHeight*this.getHeightFactor()
 }
 
@@ -111,22 +112,24 @@ function Game() {
     const camera = new Camera(vec3.fromValues(30.2, 10.0, -50.4),
         vec3.fromValues(0.0, 0.0, -51.0))
 
-    const environment = new Environment(vec3.normalize(vec3.create(), vec3.fromValues(1.0, 0.3, -1.0)),
-        vec3.fromValues(1.0, 0.549, 0.0),
-        new Heightmap('heightmap',
-            1.0,
-            0.1,
-            -55, {
-                sand: 'sand',
-                grass: 'grass',
-                rock: 'rock',
-                snow: 'snow'
-            }))
-
+    let environment = null
     let terrain = null
     let skybox = null
 
-    this.initialize = context => {
+    this.initialize = (context, content) => {
+        environment = new Environment(vec3.normalize(vec3.create(), vec3.fromValues(1.0, 0.3, -1.0)),
+            vec3.fromValues(1.0, 0.549, 0.0),
+            new Heightmap(content,
+                'heightmap',
+                1.0,
+                0.1,
+                -55, {
+                    sand: 'sand',
+                    grass: 'grass',
+                    rock: 'rock',
+                    snow: 'snow'
+                }))
+
         this.objects.push(camera)
         skybox = new Skybox(camera, 1.0, environment)
         this.objects.push(skybox)

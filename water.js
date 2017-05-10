@@ -40,10 +40,10 @@ function Water(camera, environment, terrain, assetName) {
                 1.0, 0.0]
     }
 
-    const getVertices = (content, environment) => {
+    const getVertices = environment => {
         const h = environment.getHeightmap().getWaterHeight()
-        const w = terrain.getWidth(content, environment)
-        const l = terrain.getLength(content, environment)
+        const w = terrain.getWidth(environment)
+        const l = terrain.getLength(environment)
         return [0.0, h,  0.0  ,
                 w  , h, -1.0*l,
                 0.0, h, -1.0*l,
@@ -53,7 +53,7 @@ function Water(camera, environment, terrain, assetName) {
     }
 
     this.initialize = (context, content) => {
-        positionBuffer = createBuffer(context, new Float32Array(getVertices(content, environment)))
+        positionBuffer = createBuffer(context, new Float32Array(getVertices(environment)))
         textureBuffer = createBuffer(context, new Float32Array(getTextureCoords()))
         program = content.programs['water']
         attributes = {
