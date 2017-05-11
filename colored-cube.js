@@ -32,17 +32,17 @@ function ColoredCube(camera, environment, size, position) {
         positionBuffer = glutils.createBuffer(context,
             program,
             new Float32Array(cube.vertices),
-            'a_position',
+            (context, program) => context.getAttribLocation(program, 'a_position'),
             3)
         colorBuffer = glutils.createBuffer(context,
             program,
             new Float32Array(colors),
-            'a_color',
+            (context, program) => context.getAttribLocation(program, 'a_color'),
             4)
         normalsBuffer = glutils.createBuffer(context,
             program,
             new Float32Array(cube.normals),
-            'a_normal',
+            (context, program) => context.getAttribLocation(program, 'a_normal'),
             3)
         attributes = {
             'u_world': context.getUniformLocation(program, 'u_world'),

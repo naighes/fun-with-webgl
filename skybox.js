@@ -18,7 +18,7 @@ function Skybox(camera, size, environment) {
         positionBuffer = glutils.createBuffer(context,
             program,
             new Float32Array(cube.vertices),
-            'a_position',
+            (context, program) => context.getAttribLocation(program, 'a_position'),
             3)
         attributes = {
             'u_view': context.getUniformLocation(program, 'u_view'),
