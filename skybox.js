@@ -25,7 +25,6 @@ function Skybox(camera, size, environment) {
             'u_reflection_view': context.getUniformLocation(program, 'u_reflection_view'),
             'u_world': context.getUniformLocation(program, 'u_world'),
             'u_projection': context.getUniformLocation(program, 'u_projection'),
-            'a_position': context.getAttribLocation(program, 'a_position'),
             'u_reflectionClipPlane': context.getUniformLocation(program, 'u_reflectionClipPlane'),
             'u_enableReflectionClipping': context.getUniformLocation(program, 'u_enableReflectionClipping')
         }
