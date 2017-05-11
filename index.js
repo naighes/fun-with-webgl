@@ -111,9 +111,7 @@ function Game() {
                  0.0, 0.0, 1.0, 1.0]
 
     const broker = new Broker()
-    const camera = new FirstPersonCamera(vec3.fromValues(30.2, 0.0, -50.4),
-        vec3.fromValues(0.0, 0.0, -51.0))
-
+    let camera = null
     let environment = null
     let terrain = null
     let skybox = null
@@ -131,7 +129,10 @@ function Game() {
                     rock: 'rock',
                     snow: 'snow'
                 }))
-
+        camera = new FirstPersonCamera(vec3.fromValues(30.2, 0.0, -50.4),
+            vec3.fromValues(0.0, 0.0, -51.0),
+            environment,
+            1.8)
         this.objects.push(camera)
         skybox = new Skybox(camera, 1.0, environment)
         this.objects.push(skybox)

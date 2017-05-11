@@ -3,13 +3,14 @@ const vec3 = glmatrix.vec3
 const mat4 = glmatrix.mat4
 const quat = glmatrix.quat
 
-function Camera(position, target) {
+function Camera(position, target, environment, heightOffset) {
     let driving = false
     let cx = 0
     let cy = 0
     let xMove = t => 0.0
     let zMove = t => 0.0
     let currentTarget = vec3.copy(vec3.create(), target)
+    let currentHeight = 0.0
     let view = mat4.lookAt(mat4.create(),
         position,
         target,
@@ -139,12 +140,16 @@ function Camera(position, target) {
         currentRotation.pitch += rotationDelta.pitch(time.delta, rotationSpeed)
         currentRotation.yaw += rotationDelta.yaw(time.delta, rotationSpeed)
 
-        let rotation = this.getRotation()
+        let yaw = mat4.fromYRotation(mat4.create(), currentRotation.yaw)
         let addVector = vec3.fromValues(xMove(time.delta, moveSpeed),
             0.0,
             zMove(time.delta, moveSpeed))
-        let rotatedVector = vec3.transformMat4(vec3.create(), addVector, rotation);
+        let rotatedVector = vec3.transformMat4(vec3.create(), addVector, yaw);
         vec3.add(position, position, rotatedVector)
+        const wh = environment.getHeightmap().getWaterHeight()
+        position[1] = Math.max(currentHeight, wh)+heightOffset
+
+        let rotation = this.getRotation()
         let rotatedTarget = vec3.transformMat4(vec3.create(),
             vec3.copy(vec3.create(), target),
             rotation)
@@ -158,7 +163,7 @@ function Camera(position, target) {
 
     this.receive = (name, value) => {
         if (name === 'getHeightAtCameraPosition') {
-            // TODO: do something with value
+            currentHeight = value
         }
     }
 }
