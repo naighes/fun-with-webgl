@@ -3,6 +3,7 @@ const vec3 = glmatrix.vec3
 const vec4 = glmatrix.vec4
 const mat4 = glmatrix.mat4
 const geometry = require('./geometry')
+const glutils = require('./glutils')
 
 function Skybox(camera, size, environment) {
     const cube = geometry.createSkybox(size)
@@ -12,31 +13,13 @@ function Skybox(camera, size, environment) {
     let attributes = null
     let texture = null
 
-    const createBuffer = (context, data) => {
-        const buffer = context.createBuffer()
-        context.bindBuffer(context.ARRAY_BUFFER, buffer)
-        context.bufferData(context.ARRAY_BUFFER, data, context.STATIC_DRAW)
-
-        return buffer
-    }
-
-    const sendData = (context, buffer, size, name) => {
-        context.bindBuffer(context.ARRAY_BUFFER, buffer)
-
-        const attribute = attributes[name]
-        context.enableVertexAttribArray(attribute)
-
-        context.vertexAttribPointer(attribute,
-            size,
-            context.FLOAT,
-            false,
-            0,
-            0)
-    }
-
     this.initialize = (context, content) => {
-        positionBuffer = createBuffer(context, new Float32Array(cube.vertices))
         program = content.programs['skybox']
+        positionBuffer = glutils.createBuffer(context,
+            program,
+            new Float32Array(cube.vertices),
+            'a_position',
+            3)
         attributes = {
             'u_view': context.getUniformLocation(program, 'u_view'),
             'u_reflection_view': context.getUniformLocation(program, 'u_reflection_view'),
@@ -155,7 +138,7 @@ function Skybox(camera, size, environment) {
         context.depthMask(false)
 
         context.bindTexture(context.TEXTURE_CUBE_MAP, texture)
-        sendData(context, positionBuffer, 3, 'a_position')
+        positionBuffer.bind(context)
         context.drawArrays(context.TRIANGLES,
             0,
             cube.vertices.length/3)
