@@ -29,17 +29,17 @@ function ColoredCube(camera, environment, size, position) {
 
     this.initialize = (context, content) => {
         program = content.programs['colored-cube']
-        positionBuffer = glutils.createBuffer(context,
+        positionBuffer = glutils.createArrayBuffer(context,
             program,
             new Float32Array(cube.vertices),
             (context, program) => context.getAttribLocation(program, 'a_position'),
             3)
-        colorBuffer = glutils.createBuffer(context,
+        colorBuffer = glutils.createArrayBuffer(context,
             program,
             new Float32Array(colors),
             (context, program) => context.getAttribLocation(program, 'a_color'),
             4)
-        normalsBuffer = glutils.createBuffer(context,
+        normalsBuffer = glutils.createArrayBuffer(context,
             program,
             new Float32Array(cube.normals),
             (context, program) => context.getAttribLocation(program, 'a_normal'),

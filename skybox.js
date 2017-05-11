@@ -15,7 +15,7 @@ function Skybox(camera, size, environment) {
 
     this.initialize = (context, content) => {
         program = content.programs['skybox']
-        positionBuffer = glutils.createBuffer(context,
+        positionBuffer = glutils.createArrayBuffer(context,
             program,
             new Float32Array(cube.vertices),
             (context, program) => context.getAttribLocation(program, 'a_position'),

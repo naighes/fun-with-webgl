@@ -18,17 +18,17 @@ function TexturedCube(camera, environment, size, position, assetName) {
 
     this.initialize = (context, content) => {
         program = content.programs['textured-cube']
-        positionBuffer = glutils.createBuffer(context,
+        positionBuffer = glutils.createArrayBuffer(context,
             program,
             new Float32Array(cube.vertices),
             (context, program) => context.getAttribLocation(program, 'a_position'),
             3)
-        textureBuffer = glutils.createBuffer(context,
+        textureBuffer = glutils.createArrayBuffer(context,
             program,
             new Float32Array(cube.textureCoords),
             (context, program) => context.getAttribLocation(program, 'a_texcoord'),
             2)
-        normalsBuffer = glutils.createBuffer(context,
+        normalsBuffer = glutils.createArrayBuffer(context,
             program,
             new Float32Array(cube.normals),
             (context, program) => context.getAttribLocation(program, 'a_normal'),

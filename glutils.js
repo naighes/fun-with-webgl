@@ -1,7 +1,8 @@
-module.exports.createBuffer = (context,
+const createBuffer = (context,
     program,
     data,
     getLocation,
+    target,
     size) => {
         const buffer = context.createBuffer()
         context.bindBuffer(context.ARRAY_BUFFER, buffer)
@@ -39,4 +40,18 @@ module.exports.createBuffer = (context,
         }
 
         return { bind: bind }
+    }
+
+
+module.exports.createArrayBuffer = (context,
+    program,
+    data,
+    getLocation,
+    size) => {
+        return createBuffer(context,
+            program,
+            data,
+            getLocation,
+            context.ARRAY_BUFFER,
+            size)
     }

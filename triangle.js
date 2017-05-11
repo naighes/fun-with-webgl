@@ -10,12 +10,12 @@ function Triangle(camera, vertices, tint) {
 
     this.initialize = (context, content) => {
         program = content.programs['colored-triangle']
-        positionBuffer = glutils.createBuffer(context,
+        positionBuffer = glutils.createArrayBuffer(context,
             program,
             new Float32Array(vertices),
             (context, program) => context.getAttribLocation(program, 'a_position'),
             3)
-        colorBuffer = glutils.createBuffer(context,
+        colorBuffer = glutils.createArrayBuffer(context,
             program,
             new Float32Array(tint),
             (context, program) => context.getAttribLocation(program, 'a_color'),
