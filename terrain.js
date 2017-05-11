@@ -3,6 +3,7 @@ const vec3 = glmatrix.vec3
 const vec4 = glmatrix.vec4
 const mat4 = glmatrix.mat4
 const geometry = require('./geometry')
+const glutils = require('./glutils')
 
 function Terrain(camera, environment, broker) {
     let positionBuffer = null
@@ -19,14 +20,6 @@ function Terrain(camera, environment, broker) {
     let terrain = null
     let textures = null
 
-    const createBuffer = (context, data, target) => {
-        const buffer = context.createBuffer()
-        context.bindBuffer(target, buffer)
-        context.bufferData(target, data, context.STATIC_DRAW)
-
-        return buffer
-    }
-
     const createAndBindTexture = (context, content, assetName) => {
         const texture = context.createTexture()
         context.bindTexture(context.TEXTURE_2D, texture)
@@ -39,20 +32,6 @@ function Terrain(camera, environment, broker) {
         context.generateMipmap(context.TEXTURE_2D)
 
         return texture
-    }
-
-    const sendData = (context, buffer, size, name) => {
-        context.bindBuffer(context.ARRAY_BUFFER, buffer)
-
-        const attribute = attributes[name]
-        context.enableVertexAttribArray(attribute)
-
-        context.vertexAttribPointer(attribute,
-            size,
-            context.FLOAT,
-            false,
-            0,
-            0)
     }
 
     const initializeRenderBuffer = context => {
@@ -178,30 +157,37 @@ function Terrain(camera, environment, broker) {
     }
 
     this.initialize = (context, content) => {
+        program = content.programs['terrain']
         const heightmap = getHeightmap(environment)
         terrain = geometry.createTerrain(heightmap,
             environment.getHeightmap().getHeightFactor(),
             environment.getHeightmap().getSizeFactor())
-        positionBuffer = createBuffer(context,
+        positionBuffer = glutils.createArrayBuffer(context,
+            program,
             terrain.vertices,
-            context.ARRAY_BUFFER)
-        indexBuffer = createBuffer(context,
-            terrain.indices,
-            context.ELEMENT_ARRAY_BUFFER)
-        normalsBuffer = createBuffer(context,
+            (context, program) => context.getAttribLocation(program, 'a_position'),
+            3)
+        indexBuffer = glutils.createIndexBuffer(context,
+            terrain.indices)
+        normalsBuffer = glutils.createArrayBuffer(context,
+            program,
             terrain.normals,
-            context.ARRAY_BUFFER)
-        weightBuffer = createBuffer(context,
+            (context, program) => context.getAttribLocation(program, 'a_normal'),
+            3)
+        weightBuffer = glutils.createArrayBuffer(context,
+            program,
             terrain.weights,
-            context.ARRAY_BUFFER)
-        textureBuffer = createBuffer(context,
+            (context, program) => context.getAttribLocation(program, 'a_weight'),
+            4)
+        textureBuffer = glutils.createArrayBuffer(context,
+            program,
             terrain.textureCoords,
-            context.ARRAY_BUFFER)
+            (context, program) => context.getAttribLocation(program, 'a_texcoord'),
+            2)
 
         refraction = initializeRenderBuffer(context)
         reflection = initializeRenderBuffer(context)
 
-        program = content.programs['terrain']
         attributes = {
             'u_world': context.getUniformLocation(program, 'u_world'),
             'u_worldInverseTranspose': context.getUniformLocation(program, 'u_worldInverseTranspose'),
@@ -213,11 +199,7 @@ function Terrain(camera, environment, broker) {
             'u_refractionClipPlane': context.getUniformLocation(program, 'u_refractionClipPlane'),
             'u_enableRefractionClipping': context.getUniformLocation(program, 'u_enableRefractionClipping'),
             'u_reflectionClipPlane': context.getUniformLocation(program, 'u_reflectionClipPlane'),
-            'u_enableReflectionClipping': context.getUniformLocation(program, 'u_enableReflectionClipping'),
-            'a_position': context.getAttribLocation(program, 'a_position'),
-            'a_texcoord': context.getAttribLocation(program, 'a_texcoord'),
-            'a_normal': context.getAttribLocation(program, 'a_normal'),
-            'a_weight': context.getAttribLocation(program, 'a_weight')
+            'u_enableReflectionClipping': context.getUniformLocation(program, 'u_enableReflectionClipping')
         }
 
         const assets = environment.getHeightmap().getTextures()
@@ -341,10 +323,10 @@ function Terrain(camera, environment, broker) {
     this.getReflectionTexture = () => reflection.texture
 
     const drawScene = (context, time) => {
-        sendData(context, positionBuffer, 3, 'a_position')
-        sendData(context, textureBuffer, 2, 'a_texcoord')
-        sendData(context, normalsBuffer, 3, 'a_normal')
-        sendData(context, weightBuffer, 4, 'a_weight')
+        positionBuffer.bind(context)
+        textureBuffer.bind(context)
+        normalsBuffer.bind(context)
+        weightBuffer.bind(context)
 
         textures.forEach((item, i) => {
             context.uniform1i(item.location, i)
@@ -352,7 +334,8 @@ function Terrain(camera, environment, broker) {
             context.bindTexture(context.TEXTURE_2D, item.texture)
         })
 
-        context.bindBuffer(context.ELEMENT_ARRAY_BUFFER, indexBuffer)
+        indexBuffer.bind(context)
+
         context.drawElements(context.TRIANGLES,
             terrain.indices.length,
             context.UNSIGNED_SHORT,

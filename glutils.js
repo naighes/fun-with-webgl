@@ -55,3 +55,15 @@ module.exports.createArrayBuffer = (context,
             context.ARRAY_BUFFER,
             size)
     }
+
+module.exports.createIndexBuffer = (context, data) => {
+    const buffer = context.createBuffer()
+    context.bindBuffer(context.ELEMENT_ARRAY_BUFFER, buffer)
+    context.bufferData(context.ELEMENT_ARRAY_BUFFER, data, context.STATIC_DRAW)
+
+    const bind = context => {
+        context.bindBuffer(context.ELEMENT_ARRAY_BUFFER, buffer)
+    }
+
+    return { bind: bind }
+}
