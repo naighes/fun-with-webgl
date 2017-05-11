@@ -1,38 +1,25 @@
 const glmatrix = require('gl-matrix')
 const vec3 = glmatrix.vec3
 const mat4 = glmatrix.mat4
+const glutils = require('./glutils')
 
 function Triangle(camera, vertices, tint) {
     let positionBuffer = null
     let colorBuffer = null
     let program = null
 
-    const createBuffer = (context, data) => {
-        const buffer = context.createBuffer()
-        context.bindBuffer(context.ARRAY_BUFFER, buffer)
-        context.bufferData(context.ARRAY_BUFFER, data, context.STATIC_DRAW)
-
-        return buffer
-    }
-
-    const sendData = (context, program, buffer, size, name) => {
-        context.bindBuffer(context.ARRAY_BUFFER, buffer)
-
-        const attribute = context.getAttribLocation(program, name)
-        context.enableVertexAttribArray(attribute)
-
-        context.vertexAttribPointer(attribute,
-            size,
-            context.FLOAT,
-            false,
-            0,
-            0)
-    }
-
     this.initialize = (context, content) => {
-        positionBuffer = createBuffer(context, new Float32Array(vertices))
-        colorBuffer = createBuffer(context, new Float32Array(tint))
         program = content.programs['colored-triangle']
+        positionBuffer = glutils.createBuffer(context,
+            program,
+            new Float32Array(vertices),
+            (context, program) => context.getAttribLocation(program, 'a_position'),
+            3)
+        colorBuffer = glutils.createBuffer(context,
+            program,
+            new Float32Array(tint),
+            (context, program) => context.getAttribLocation(program, 'a_color'),
+            4)
     }
 
     this.update = (context, time) => {
@@ -47,8 +34,8 @@ function Triangle(camera, vertices, tint) {
     this.draw = (context, time) => {
         context.useProgram(program)
 
-        sendData(context, program, positionBuffer, 3, 'a_position')
-        sendData(context, program, colorBuffer, 4, 'a_color')
+        positionBuffer.bind(context)
+        colorBuffer.bind(context)
 
         context.drawArrays(context.TRIANGLE_STRIP,
             0,
