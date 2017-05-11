@@ -4,7 +4,7 @@ const vec4 = glmatrix.vec4
 const mat4 = glmatrix.mat4
 const geometry = require('./geometry')
 
-function Terrain(camera, environment) {
+function Terrain(camera, environment, broker) {
     let positionBuffer = null
     let indexBuffer = null
     let textureBuffer = null
@@ -133,7 +133,17 @@ function Terrain(camera, environment) {
 
     this.getLength = environment => environment.getHeightmap().getHeight()
 
-    const getHeightAt = (x, z, heightmap, terrain) => {
+    this.getHeightAt = (x, z) => {
+        return heightAt(x, z, environment.getHeightmap(), terrain)
+    }
+
+    this.getHeightAtCameraPosition = () => {
+        const position = camera.getPosition()
+
+        return this.getHeightAt(position[0], position[2])
+    }
+
+    const heightAt = (x, z, heightmap, terrain) => {
         const nx = x/heightmap.getSizeFactor()
         const nz = z/heightmap.getSizeFactor()
 
@@ -261,6 +271,8 @@ function Terrain(camera, environment) {
 
         context.uniform3fv(attributes['u_lightPosition'], environment.getLightPosition())
         context.uniform3fv(attributes['u_ambientLight'], environment.getAmbientLight())
+
+        broker.send('getHeightAtCameraPosition', this.getHeightAtCameraPosition())
     }
 
     const getReflectionView = () => {

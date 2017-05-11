@@ -28,8 +28,6 @@ function Camera(position, target) {
     const moveSpeed = 16.0
     const rotationSpeed = 20.0
 
-    this.trackHeight = (getHeight
-
     this.getProjection = context => {
         const result = mat4.create()
         const aspect = context.canvas.clientWidth/context.canvas.clientHeight
@@ -156,6 +154,12 @@ function Camera(position, target) {
             rotation)
 
         view = mat4.lookAt(mat4.create(), position, currentTarget, rotatedUp)
+    }
+
+    this.receive = (name, value) => {
+        if (name === 'getHeightAtCameraPosition') {
+            // TODO: do something with value
+        }
     }
 }
 

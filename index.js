@@ -1,8 +1,9 @@
 const wgl = require('./lib')
 const glmatrix = require('gl-matrix')
 const vec3 = glmatrix.vec3
+const Broker = require('./broker')
 const Triangle = require('./triangle')
-const Camera = require('./camera')
+const FirstPersonCamera = require('./first-person-camera')
 const ColoredCube = require('./colored-cube')
 const TexturedCube = require('./textured-cube')
 const Terrain = require('./terrain')
@@ -109,7 +110,8 @@ function Game() {
                  0.0, 1.0, 0.0, 1.0,
                  0.0, 0.0, 1.0, 1.0]
 
-    const camera = new Camera(vec3.fromValues(30.2, 10.0, -50.4),
+    const broker = new Broker()
+    const camera = new FirstPersonCamera(vec3.fromValues(30.2, 0.0, -50.4),
         vec3.fromValues(0.0, 0.0, -51.0))
 
     let environment = null
@@ -142,7 +144,8 @@ function Game() {
             1.3,
             vec3.fromValues(0.55, -0.8, -2.0),
             'metal-box'))
-        terrain = new Terrain(camera, environment)
+        terrain = new Terrain(camera, environment, broker)
+        broker.addSubscription(camera, 'getHeightAtCameraPosition')
         this.objects.push(new Water(camera,
             environment,
             terrain,
