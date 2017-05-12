@@ -5,6 +5,6 @@ Installation
 
 ```
 npm install
-npm run open
+npm run start
 ```
 
