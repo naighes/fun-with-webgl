@@ -2,13 +2,36 @@ const glmatrix = require('gl-matrix')
 const vec3 = glmatrix.vec3
 const mat4 = glmatrix.mat4
 const glutils = require('./glutils')
+const noise = require('./noise')
 
-function Square(camera, environment, size, assetName) {
+function Square(camera, environment, size) {
     let attributes = null
     let positionBuffer = null
     let textureBuffer = null
     let program = null
     let texture = null
+
+    const createTexture = (context, width, height, data) => {
+        const texture = context.createTexture()
+        context.bindTexture(context.TEXTURE_2D, texture)
+        context.texImage2D(context.TEXTURE_2D,
+            0,
+            context.RGBA,
+            width,
+            height,
+            0,
+            context.RGBA,
+            context.UNSIGNED_BYTE,
+            data)
+        context.texParameteri(context.TEXTURE_2D,
+            context.TEXTURE_MAG_FILTER,
+            context.NEAREST)
+        context.texParameteri(context.TEXTURE_2D,
+            context.TEXTURE_MIN_FILTER,
+            context.NEAREST)
+
+        return texture
+    }
 
     const getTextureCoords = () => {
         return [0.0, 0.0,
@@ -47,21 +70,22 @@ function Square(camera, environment, size, assetName) {
             'u_texture': context.getUniformLocation(program, 'u_texture')
         }
 
-        texture = createAndBindTexture(context, content, assetName)
+        const getNoise = s => noise.smoothNoise(s,
+            () => Math.random()*256,
+            4.0)
+        texture = createNoiseTexture(context,
+            128,
+            getNoise)
     }
 
-    const createAndBindTexture = (context, content, assetName) => {
-        const texture = context.createTexture()
-        context.bindTexture(context.TEXTURE_2D, texture)
-        context.texImage2D(context.TEXTURE_2D,
-            0,
-            context.RGBA,
-            context.RGBA,
-            context.UNSIGNED_BYTE,
-            content.resources[assetName].content)
-        context.generateMipmap(context.TEXTURE_2D)
-
-        return texture
+    const createNoiseTexture = (context, size, noise) => {
+        const data = noise(size).reduce((a, b) => {
+            return a.concat([b, b, b, 255])
+        }, [])
+        return createTexture(context,
+            size,
+            size,
+            new Uint8Array(data))
     }
 
     this.update = (context, time) => {
