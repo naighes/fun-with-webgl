@@ -56,7 +56,7 @@ const turbulenceNoise = (size, rnd, zoom) => {
         const y = Math.floor(i/size)
         const x = i-size*y
 
-        return calculateTurbulenceNoise(x, y, noise, size, zoom)
+        return size*calculateTurbulenceNoise(x, y, noise, size, zoom)
     })
 }
 
@@ -71,5 +71,5 @@ const calculateTurbulenceNoise = (x, y, noise, size, zoom) => {
         z = z/2.0
     }
 
-    return size*value/zoom
+    return value/zoom
 }
