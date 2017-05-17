@@ -49,3 +49,27 @@ const calculateSmoothNoise = (x, y, noise, size) => {
            dx*(1-dy)*at(noise, x1, y2) +
            (1-dx)*(1-dy)*at(noise, x2, y2)
 }
+
+const turbulenceNoise = (size, rnd, zoom) => {
+    const noise = basicNoise(size, rnd)
+    return noise.map((v, i) => {
+        const y = Math.floor(i/size)
+        const x = i-size*y
+
+        return calculateTurbulenceNoise(x, y, noise, size, zoom)
+    })
+}
+
+module.exports.turbulenceNoise = turbulenceNoise
+
+const calculateTurbulenceNoise = (x, y, noise, size, zoom) => {
+    let value = 0.0
+    let z = zoom
+
+    while (z >= 1) {
+        value += calculateSmoothNoise(x/z, y/z, noise, size)*z
+        z = z/2.0
+    }
+
+    return size*value/zoom
+}
