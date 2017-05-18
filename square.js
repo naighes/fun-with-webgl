@@ -70,11 +70,22 @@ function Square(camera, environment, size) {
             'u_texture': context.getUniformLocation(program, 'u_texture')
         }
 
-        texture = createNoiseTexture(context,
-            128,
-            s => noise.clouds(s,
-                () => Math.random(),
-                16.0))
+        const randomNoise = s => noise.marble(s,
+            () => Math.random(),
+            32.0)
+
+        const clouds = s => noise.marble(s,
+            () => Math.random(),
+            32.0)
+
+        const marble = s => noise.marble(s,
+            () => Math.random(),
+            32.0,
+            5.0,
+            10.0,
+            5.0)
+
+        texture = createNoiseTexture(context, 128, marble)
     }
 
     const createNoiseTexture = (context, size, noise) => {

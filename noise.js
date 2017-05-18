@@ -36,16 +36,6 @@ const smooth = (x, y, noise, size) => {
            (1-dx)*(1-dy)*at(noise, x2, y2)
 }
 
-const randomNoise = (size, rnd, zoom, fun) => {
-    const noise = basicNoise(size, rnd)
-    return noise.map((v, i) => {
-        const y = Math.floor(i/size)
-        const x = i-size*y
-
-        return fun(size*turbulence(x, y, noise, size, zoom))
-    })
-}
-
 const turbulence = (x, y, noise, size, zoom) => {
     let value = 0.0
     let z = zoom
@@ -58,23 +48,53 @@ const turbulence = (x, y, noise, size, zoom) => {
     return value/zoom
 }
 
+const randomNoise = (size, rnd, zoom, fun) => {
+    const noise = basicNoise(size, rnd)
+    return noise.map((v, i) => {
+        const y = Math.floor(i/size)
+        const x = i-size*y
+
+        const t = size*turbulence(x, y, noise, size, zoom)
+        return fun(t, x, y)
+    })
+}
+
 module.exports.randomNoise = (size, rnd, zoom) => {
-    return randomNoise(size,
-        rnd,
-        zoom,
-        t => [t, t, t, 255])
+    const f = (t, x, y) => [t, t, t, 255]
+
+    return randomNoise(size, rnd, zoom, f)
 }
 
 module.exports.clouds = (size, rnd, zoom) => {
-    return randomNoise(size,
-        rnd,
-        zoom,
-        t => {
-            const h = 0.662745098039216
-            const s = 1
-            const l = (192+t/4)/255
-            return hslToRgb(h, s, l)
-        })
+    const h = 0.662745098039216
+    const s = 1
+    const l = (192+t/4)/255
+    const f = (t, x, y) => hslToRgb(h, s, l)
+
+    return randomNoise(size, rnd, zoom, f)
+}
+
+/*
+    xPeriod and yPeriod together define the
+    angle of the lines
+    xPeriod and yPeriod both 0 ==> it becomes
+    a normal clouds or turbulence pattern
+
+    xPeriod: defines repetition of marble lines
+             in x direction
+    yPeriod: defines repetition of marble lines
+             in y direction
+    power = 0 ==> it becomes a normal sine pattern
+*/
+module.exports.marble = (size, rnd, zoom, xPeriod, yPeriod, power) => {
+    const f = (t, x, y) => {
+        const xyValue = x*xPeriod/size+y*yPeriod/size+power*t/256.0
+        const sineValue = 256*Math.abs(Math.sin(xyValue*Math.PI))
+
+        return [sineValue, sineValue, sineValue, 255]
+    }
+
+    return randomNoise(size, rnd, zoom, f)
 }
 
 /*
