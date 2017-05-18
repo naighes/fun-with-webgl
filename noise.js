@@ -88,10 +88,23 @@ module.exports.clouds = (size, rnd, zoom) => {
 */
 module.exports.marble = (size, rnd, zoom, xPeriod, yPeriod, power, func) => {
     const f = (t, x, y) => {
-        const xyValue = x*xPeriod/size+y*yPeriod/size+power*t/256.0
-        const sineValue = 256*Math.abs(Math.sin(xyValue*Math.PI))
+        const xy = x*xPeriod/size+y*yPeriod/size+power*t/256.0
+        const v = 256*Math.abs(Math.sin(xy*Math.PI))
 
-        return func([sineValue, sineValue, sineValue, 255])
+        return func([v, v, v, 255])
+    }
+
+    return randomNoise(size, rnd, zoom, f)
+}
+
+module.exports.wood = (size, rnd, zoom, period, power, func) => {
+    const f = (t, x, y) => {
+        const vx = (x-size/2.0)/size
+        const vy = (y-size/2.0)/size
+        const dist= Math.sqrt(vx*vx+vy*vy)+power*t/256.0
+        const v = 128.0*Math.abs(Math.sin(2.0*period*dist*Math.PI))
+
+        return func([v, v, v, 255])
     }
 
     return randomNoise(size, rnd, zoom, f)

@@ -93,7 +93,20 @@ function Square(camera, environment, size) {
                 return v
             })
 
-        texture = createNoiseTexture(context, 128, marble)
+        const wood = s => noise.wood(s,
+            () => Math.random(),
+            32.0,
+            12.0,
+            0.2,
+            v => {
+                v[0] = v[0]+80
+                v[1] = v[1]+30
+                v[2] = 30
+
+                return v
+            })
+
+        texture = createNoiseTexture(context, 128, wood)
     }
 
     const createNoiseTexture = (context, size, noise) => {
