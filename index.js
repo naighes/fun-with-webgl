@@ -154,7 +154,7 @@ function Game() {
             terrain,
             'water-bump-map'))
         this.objects.push(terrain)
-        this.objects.push(new Square(camera, environment, 30))
+        this.objects.push(new Square(camera, environment, 15))
     }
 
     this.update = (context, time) => {

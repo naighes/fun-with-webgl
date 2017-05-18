@@ -43,12 +43,12 @@ function Square(camera, environment, size) {
     }
 
     const getVertices = () => {
-        return [-1.0*size, -1.0*size, 0.0,
-                +1.0*size, +1.0*size, 0.0,
-                -1.0*size, +1.0*size, 0.0,
-                +1.0*size, +1.0*size, 0.0,
-                -1.0*size, -1.0*size, 0.0,
-                +1.0*size, -1.0*size, 0.0]
+        return [-1.0*size, -1.0*size+2.0, 0.0,
+                +1.0*size, +1.0*size+2.0, 0.0,
+                -1.0*size, +1.0*size+2.0, 0.0,
+                +1.0*size, +1.0*size+2.0, 0.0,
+                -1.0*size, -1.0*size+2.0, 0.0,
+                +1.0*size, -1.0*size+2.0, 0.0]
     }
 
     this.initialize = (context, content) => {
@@ -80,10 +80,18 @@ function Square(camera, environment, size) {
 
         const marble = s => noise.marble(s,
             () => Math.random(),
-            32.0,
+            16.0,
             5.0,
             10.0,
-            5.0)
+            5.0,
+            v => {
+                const k = 0.58
+                v[0] = v[0]*k+70
+                v[1] = v[1]*k+10
+                v[2] = v[2]*k
+
+                return v
+            })
 
         texture = createNoiseTexture(context, 128, marble)
     }

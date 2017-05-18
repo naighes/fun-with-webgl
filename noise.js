@@ -86,12 +86,12 @@ module.exports.clouds = (size, rnd, zoom) => {
              in y direction
     power = 0 ==> it becomes a normal sine pattern
 */
-module.exports.marble = (size, rnd, zoom, xPeriod, yPeriod, power) => {
+module.exports.marble = (size, rnd, zoom, xPeriod, yPeriod, power, func) => {
     const f = (t, x, y) => {
         const xyValue = x*xPeriod/size+y*yPeriod/size+power*t/256.0
         const sineValue = 256*Math.abs(Math.sin(xyValue*Math.PI))
 
-        return [sineValue, sineValue, sineValue, 255]
+        return func([sineValue, sineValue, sineValue, 255])
     }
 
     return randomNoise(size, rnd, zoom, f)
