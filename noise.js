@@ -1,3 +1,6 @@
+const glmatrix = require('gl-matrix')
+const vec2 = glmatrix.vec2
+
 const basicNoise = (size, rnd) => {
     let rows = []
 
@@ -68,8 +71,7 @@ module.exports.randomNoise = (size, rnd, zoom) => {
 module.exports.clouds = (size, rnd, zoom) => {
     const h = 0.662745098039216
     const s = 1
-    const l = (192+t/4)/255
-    const f = (t, x, y) => hslToRgb(h, s, l)
+    const f = (t, x, y) => hslToRgb(h, s, (192+t/4)/255)
 
     return randomNoise(size, rnd, zoom, f)
 }
@@ -143,4 +145,34 @@ const hslToRgb = (h, s, l) => {
     }
 
     return [r*255, g*255, b*255, 255]
+}
+
+// NOTE: it's gonna be computationally expansive.
+//       it'd be better to rely on hash lookups.
+module.exports.createGrid = (size, rnd) => {
+    let rows = []
+
+    for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+            const v = vec2.normalize(vec2.create(), vec2.fromValues(rnd(), rnd()))
+            rows.push(v[0])
+            rows.push(v[1])
+        }
+    }
+
+    return rows
+}
+
+module.exports.cubeCoords = (x, y) => {
+    const x0 = Math.floor(x)
+    const y0 = Math.floor(y)
+    const x1 = x0+1
+    const y1 = y0+1
+
+    return {
+        x0: x0,
+        y0: y0,
+        x1: x1,
+        y1: y1
+    }
 }
